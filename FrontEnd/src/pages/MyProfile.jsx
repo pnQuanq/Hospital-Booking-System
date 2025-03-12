@@ -31,7 +31,9 @@ const MyProfile = () => {
           }
         />
       ) : (
-        <p className="font-medium text-3xl text-neutral-800 mt-4">{userData.name}</p>
+        <p className="font-medium text-3xl text-neutral-800 mt-4">
+          {userData.name}
+        </p>
       )}
 
       <hr className="border-none bg-zinc-400 h-[1px]" />
@@ -43,7 +45,7 @@ const MyProfile = () => {
           <p className="font-medium">Phone:</p>
           {isEdit ? (
             <input
-            className="bg-gray-100 max-w-52"
+              className="bg-gray-100 max-w-52"
               type="text"
               value={userData.phone}
               onChange={(e) =>
@@ -57,7 +59,7 @@ const MyProfile = () => {
           {isEdit ? (
             <p>
               <input
-              className="bg-gray-50"
+                className="bg-gray-50"
                 value={userData.address.line1}
                 onChange={(e) =>
                   setUserData((prev) => ({
@@ -70,7 +72,7 @@ const MyProfile = () => {
               />
               <br />
               <input
-              className="bg-gray-50"
+                className="bg-gray-50"
                 value={userData.address.line2}
                 onChange={(e) =>
                   setUserData((prev) => ({
@@ -98,7 +100,7 @@ const MyProfile = () => {
           <p className="font-medium">Gender:</p>
           {isEdit ? (
             <select
-            className="max-w-20 bg-gray-100"
+              className="max-w-20 bg-gray-100"
               value={userData.gender}
               onChange={(e) =>
                 setUserData((prev) => ({ ...prev, gender: e.target.value }))
@@ -113,7 +115,7 @@ const MyProfile = () => {
           <p className="font-medium">Birthday:</p>
           {isEdit ? (
             <input
-            className="max-w-28 bg-gray-100"
+              className="max-w-28 bg-gray-100"
               value={userData.gender}
               onChange={(e) =>
                 setUserData((prev) => ({ ...prev, gender: e.target.value }))
@@ -126,11 +128,21 @@ const MyProfile = () => {
         </div>
       </div>
       <div className="mt-10">
-        {
-          isEdit
-          ? <button className="cursor-pointer border border-blue-600 px-8 py-2 rounded-full hover:bg-blue-600 hover:text-white transition-all" onClick={()=>setIsEdit(false)}>Save</button>
-          : <button className="cursor-pointer border border-blue-600 px-8 py-2 rounded-full hover:bg-blue-600 hover:text-white transition-all" onClick={()=>setIsEdit(true)}>Edit</button>
-        }
+        {isEdit ? (
+          <button
+            className="cursor-pointer border border-blue-600 px-8 py-2 rounded-full hover:bg-blue-600 hover:text-white transition-all"
+            onClick={() => setIsEdit(false)}
+          >
+            Save
+          </button>
+        ) : (
+          <button
+            className="cursor-pointer border border-blue-600 px-8 py-2 rounded-full hover:bg-blue-600 hover:text-white transition-all"
+            onClick={() => setIsEdit(true)}
+          >
+            Edit
+          </button>
+        )}
       </div>
     </div>
   );
