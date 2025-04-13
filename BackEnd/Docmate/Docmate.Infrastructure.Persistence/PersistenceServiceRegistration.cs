@@ -1,5 +1,5 @@
 ﻿
-using Docmate.Domain.Entities;
+using Docmate.Core.Domain.Entities;
 using Docmate.Infrastructure.Persistence.DataContext;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -57,6 +57,16 @@ namespace Docmate.Infrastructure.Persistence
             });
             // 4. Role-based Authorization
             services.AddAuthorization();
+
+            services.AddCors(options =>
+            {
+                options.AddPolicy("AllowReactApp", policy =>
+                {
+                    policy.WithOrigins("http://localhost:5173")
+                          .AllowAnyMethod()
+                          .AllowAnyHeader();
+                });
+            });
 
             return services;
         }

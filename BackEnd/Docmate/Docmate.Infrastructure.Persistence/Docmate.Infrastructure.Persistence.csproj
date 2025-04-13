@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Docmate.Domain\Docmate.Domain.csproj" />
+    <ProjectReference Include="..\Docmate.Domain\Docmate.Core.Domain.csproj" />
   </ItemGroup>
 
 </Project>

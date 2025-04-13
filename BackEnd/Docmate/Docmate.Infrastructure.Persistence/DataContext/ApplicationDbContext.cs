@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Docmate.Domain.Common;
-using Docmate.Domain.Entities;
+using Docmate.Core.Domain.Common;
+using Docmate.Core.Domain.Entities;
 
 namespace Docmate.Infrastructure.Persistence.DataContext
 {

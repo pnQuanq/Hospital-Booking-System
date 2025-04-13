@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 
-
-namespace Docmate.Domain.Entities
+namespace Docmate.Core.Domain.Entities
 {
     public class ApplicationUser : IdentityUser<Guid>
     {

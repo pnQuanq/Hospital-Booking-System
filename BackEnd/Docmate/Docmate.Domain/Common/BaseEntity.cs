@@ -1,4 +1,4 @@
-﻿namespace Docmate.Domain.Common
+﻿namespace Docmate.Core.Domain.Common
 {
     public class BaseEntity
     {

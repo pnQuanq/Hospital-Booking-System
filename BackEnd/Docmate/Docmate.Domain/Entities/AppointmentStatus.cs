@@ -1,5 +1,5 @@
 ﻿
-namespace Docmate.Domain.Entities
+namespace Docmate.Core.Domain.Entities
 {
     public enum AppointmentStatus
     {

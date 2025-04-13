@@ -1,7 +1,7 @@
 ﻿
-using Docmate.Domain.Common;
+using Docmate.Core.Domain.Common;
 
-namespace Docmate.Domain.Entities
+namespace Docmate.Core.Domain.Entities
 {
     public class Review : BaseEntity
     {
