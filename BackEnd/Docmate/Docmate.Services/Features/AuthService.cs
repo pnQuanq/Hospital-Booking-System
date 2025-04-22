@@ -67,6 +67,12 @@ namespace Docmate.Core.Services.Features
 
             var result = await _userManager.CreateAsync(user, registerDto.Password);
 
+            var roleResult = await _userManager.AddToRoleAsync(user, "Patient");
+
+            if (!roleResult.Succeeded)
+            {
+                return IdentityResult.Failed(new IdentityError { Description = "Failed to assign Patient role." });
+            }
             return result;
         }
         private bool IsValidEmail(string email)
