@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const [state, setState] = useState("Sign Up");
 
   const [email, setEmail] = useState("");
@@ -27,9 +27,9 @@ const Login = () => {
 
     try {
       const response = await fetch(url, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
       });
@@ -37,21 +37,27 @@ const Login = () => {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.message || 'Something went wrong');
+        throw new Error(result.message || "Something went wrong");
       }
 
-      if (state === 'Sign Up') {
-        alert(result.message || 'Account created successfully');
-        setState('Login')
+      if (state === "Sign Up") {
+        alert(result.message || "Account created successfully");
+        setState("Login");
         window.setTimeout(() => {
           navigate("/login"); // Redirect to login after alert OK
         }, 500);
       } else {
-        alert('Login successful');
+        localStorage.setItem("AToken", result.token);
+
+        window.dispatchEvent(new Event("storage"));
+
+        alert("Login successful");
+
+        navigate("/");
       }
     } catch (error) {
       console.error(error);
-      alert(error.message || 'Something went wrong');
+      alert(error.message || "Something went wrong");
     }
   };
   return (
