@@ -1,5 +1,5 @@
 import React from "react";
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, useLocation } from "react-router-dom";
 import Home from "./pages/Home";
 import Doctors from "./pages/Doctor";
 import Login from "./pages/Login";
@@ -14,8 +14,34 @@ import DashBoard from "./pages/DashBoard";
 import AllAppointment from "./pages/AllAppointment";
 import AddDoctor from "./pages/AddDoctor";
 import DoctorList from "./pages/DoctorList";
+import AdminLayout from "./layouts/AdminLayout.jsx";
 
 const App = () => {
+  const location = useLocation();
+  
+  // Check if current route is an admin route
+  const isAdminRoute = [
+    "/admin-dashboard",
+    "/all-appointments",
+    "/add-doctor",
+    "/doctor-list"
+  ].some(route => location.pathname.startsWith(route));
+
+  // For admin routes, only render Routes within AdminLayout
+  if (isAdminRoute) {
+    return (
+      <AdminLayout>
+        <Routes>
+          <Route path="/admin-dashboard" element={<DashBoard />} />
+          <Route path="/all-appointments" element={<AllAppointment />} />
+          <Route path="/add-doctor" element={<AddDoctor />} />
+          <Route path="/doctor-list" element={<DoctorList />} />
+        </Routes>
+      </AdminLayout>
+    );
+  }
+
+  // For patient routes, render with Navbar and Footer
   return (
     <div className="mx-4 sm:mx-[10%]">
       <Navbar />
@@ -29,10 +55,6 @@ const App = () => {
         <Route path="/my-profile" element={<MyProfile />} />
         <Route path="/my-appointments" element={<MyAppointment />} />
         <Route path="/appointment/:docId" element={<Appointment />} />
-        <Route path="/admin-dashboard" element={<DashBoard />} />
-        <Route path="/all-appointments" element={<AllAppointment />} />
-        <Route path="/add-doctor" element={<AddDoctor />} />
-        <Route path="/doctor-list" element={<DoctorList />} />
       </Routes>
       <Footer />
     </div>

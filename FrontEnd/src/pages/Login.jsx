@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -49,11 +50,40 @@ const Login = () => {
       } else {
         localStorage.setItem("AToken", result.token);
 
+        // Decode the JWT token to extract user role
+        const decoded = jwtDecode(result.token);
+        console.log("Decoded token:", decoded); // Log the full decoded token for debugging
+        
+        // Extract the role from the "Role" property based on your token structure
+        const role = decoded.Role;
+        console.log("Extracted role:", role);
+        
+        // Check if the user is an Admin
+        const isAdmin = role === "Admin";
+
+        // Set isAdmin in localStorage
+        localStorage.setItem("isAdmin", isAdmin ? "true" : "false");
+        console.log("isAdmin set in localStorage:", isAdmin);
+        
+        // Show login successful message
+        alert("Login successful as " + (isAdmin ? "Administrator" : "Patient"));
+        
+        // Redirect based on role with delayed execution to ensure state is updated
+        if (isAdmin) {
+          console.log("Admin login detected, navigating to admin dashboard");
+          // Use setTimeout to ensure the navigation happens after the current execution cycle
+          setTimeout(() => {
+            navigate("/admin-dashboard");
+          }, 100);
+        } else {
+          console.log("Patient login detected, navigating to home");
+          setTimeout(() => {
+            navigate("/");
+          }, 100);
+        }
+
+        // Dispatch storage event to notify other components
         window.dispatchEvent(new Event("storage"));
-
-        alert("Login successful");
-
-        navigate("/");
       }
     } catch (error) {
       console.error(error);

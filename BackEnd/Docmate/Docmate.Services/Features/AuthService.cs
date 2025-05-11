@@ -25,20 +25,18 @@ namespace Docmate.Core.Services.Features
 
             if (user == null || !await _userManager.CheckPasswordAsync(user, loginDto.Password))
             {
-                return "Username or Password not correct.";
+                throw new UnauthorizedAccessException("Username or password not correct.");
             }
 
             var result = await _signInManager.PasswordSignInAsync(user, loginDto.Password, false, false);
 
             if (!result.Succeeded)
             {
-                return "Invalid login attempt.";
+                throw new UnauthorizedAccessException("Invalid login attempt.");
             }
 
             // Generate JWT Token
-            var token = await _tokenService.GenerateAccessTokenAsync(user);
-
-            return token;
+            return await _tokenService.GenerateAccessTokenAsync(user);
         }
 
         public Task LogoutAsync()
