@@ -1,4 +1,4 @@
-﻿
+﻿using Microsoft.EntityFrameworkCore;
 using Docmate.Core.Domain.Entities;
 using Docmate.Core.Domain.Repositories;
 using Docmate.Infrastructure.Persistence.DataContext;
@@ -10,6 +10,20 @@ namespace Docmate.Infrastructure.Persistence.Repositories
     {
         public DoctorRepository(ApplicationDbContext context) : base(context)
         {
+        }
+        public async Task<List<Doctor>> GetAllWithSpecialtyAsync()
+        {
+            return await _context.Doctors
+                .Include(p => p.Specialty)
+                .Include(d => d.User)
+                .ToListAsync();
+        }
+        public async Task<Doctor> GetByIdWithUserAndSpecialtyAsync(int doctorId)
+        {
+            return await _context.Doctors
+                        .Include(d => d.User)
+                        .Include(p => p.Specialty)
+                        .FirstOrDefaultAsync(d => d.DoctorId == doctorId);
         }
     }
 }

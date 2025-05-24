@@ -15,17 +15,19 @@ import AllAppointment from "./pages/AllAppointment";
 import AddDoctor from "./pages/AddDoctor";
 import DoctorList from "./pages/DoctorList";
 import AdminLayout from "./layouts/AdminLayout.jsx";
+import SpecialtyManagement from "./pages/SpecialtyManagement.jsx";
 
 const App = () => {
   const location = useLocation();
-  
+
   // Check if current route is an admin route
   const isAdminRoute = [
     "/admin-dashboard",
     "/all-appointments",
     "/add-doctor",
-    "/doctor-list"
-  ].some(route => location.pathname.startsWith(route));
+    "/doctor-list",
+    "/specialty-management",
+  ].some((route) => location.pathname.startsWith(route));
 
   // For admin routes, only render Routes within AdminLayout
   if (isAdminRoute) {
@@ -36,6 +38,10 @@ const App = () => {
           <Route path="/all-appointments" element={<AllAppointment />} />
           <Route path="/add-doctor" element={<AddDoctor />} />
           <Route path="/doctor-list" element={<DoctorList />} />
+          <Route
+            path="/specialty-management"
+            element={<SpecialtyManagement />}
+          />
         </Routes>
       </AdminLayout>
     );

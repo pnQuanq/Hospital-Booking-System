@@ -21,6 +21,19 @@ namespace Docmate.API.Controllers
             _environment = environment;
             _specialtyService = specialtyService;
         }
+        [HttpGet("get-all-doctors")]
+        public async Task<IActionResult> GetAllDoctors()
+        {
+            try
+            {
+                var doctors = await _doctorService.GetAllDoctorsAsync();
+                return Ok(doctors);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
 
         [HttpPost("add-doctor")]
         public async Task<IActionResult> AddDoctor([FromForm] IFormFile doctorImage, [FromForm] string fullName,
@@ -61,6 +74,20 @@ namespace Docmate.API.Controllers
             await _doctorService.AddDoctorAsync(dto);
 
             return Ok(new { message = "Doctor added successfully" });
+        }
+
+        [HttpPut("update-doctor")]
+        public async Task<IActionResult> UpdateDoctor(UpdateDoctorDto dto)
+        {
+            try
+            {
+                var doctor = await _doctorService.UpdateDoctorAsync(dto);
+                return Ok(doctor);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
         }
 
         [HttpPost("add-specialty")]

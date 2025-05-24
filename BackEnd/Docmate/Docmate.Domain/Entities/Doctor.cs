@@ -14,6 +14,7 @@ namespace Docmate.Core.Domain.Entities
 
         public int ExperienceYears { get; set; }
         public string Description { get; set; }
+        public bool IsAvailable { get; set; } = true;
         public double Rating { get; set; }
 
         public ICollection<TimeSlot> TimeSlots { get; set; }
