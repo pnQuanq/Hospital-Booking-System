@@ -22,11 +22,13 @@ namespace Docmate.Infrastructure.Persistence.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("Docmate.Domain.Entities.ApplicationUser", b =>
+            modelBuilder.Entity("Docmate.Core.Domain.Entities.ApplicationUser", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
@@ -42,8 +44,11 @@ namespace Docmate.Infrastructure.Persistence.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
 
-                    b.Property<string>("Fullname")
+                    b.Property<string>("FullName")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ImageUrl")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("LockoutEnabled")
@@ -92,11 +97,13 @@ namespace Docmate.Infrastructure.Persistence.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("Docmate.Domain.Entities.Appointment", b =>
+            modelBuilder.Entity("Docmate.Core.Domain.Entities.Appointment", b =>
                 {
-                    b.Property<Guid>("AppointmentId")
+                    b.Property<int>("AppointmentId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AppointmentId"));
 
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
@@ -107,11 +114,11 @@ namespace Docmate.Infrastructure.Persistence.Migrations
                     b.Property<DateTime?>("DateModified")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid>("DoctorId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("DoctorId")
+                        .HasColumnType("int");
 
-                    b.Property<Guid>("PatientId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("PatientId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -126,11 +133,13 @@ namespace Docmate.Infrastructure.Persistence.Migrations
                     b.ToTable("Appointments");
                 });
 
-            modelBuilder.Entity("Docmate.Domain.Entities.Doctor", b =>
+            modelBuilder.Entity("Docmate.Core.Domain.Entities.Doctor", b =>
                 {
-                    b.Property<Guid>("DoctorId")
+                    b.Property<int>("DoctorId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DoctorId"));
 
                     b.Property<DateTime?>("DateCreated")
                         .HasColumnType("datetime2");
@@ -148,12 +157,11 @@ namespace Docmate.Infrastructure.Persistence.Migrations
                     b.Property<double>("Rating")
                         .HasColumnType("float");
 
-                    b.Property<string>("SpecialtyId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(50)");
+                    b.Property<int>("SpecialtyId")
+                        .HasColumnType("int");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
 
                     b.HasKey("DoctorId");
 
@@ -165,11 +173,13 @@ namespace Docmate.Infrastructure.Persistence.Migrations
                     b.ToTable("Doctors");
                 });
 
-            modelBuilder.Entity("Docmate.Domain.Entities.Patient", b =>
+            modelBuilder.Entity("Docmate.Core.Domain.Entities.Patient", b =>
                 {
-                    b.Property<Guid>("PatientId")
+                    b.Property<int>("PatientId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PatientId"));
 
                     b.Property<string>("Allergy")
                         .IsRequired()
@@ -191,8 +201,8 @@ namespace Docmate.Infrastructure.Persistence.Migrations
                     b.Property<float>("Height")
                         .HasColumnType("real");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
 
                     b.Property<float>("Weight")
                         .HasColumnType("real");
@@ -205,14 +215,16 @@ namespace Docmate.Infrastructure.Persistence.Migrations
                     b.ToTable("Patients");
                 });
 
-            modelBuilder.Entity("Docmate.Domain.Entities.Review", b =>
+            modelBuilder.Entity("Docmate.Core.Domain.Entities.Review", b =>
                 {
-                    b.Property<Guid>("ReviewId")
+                    b.Property<int>("ReviewId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
 
-                    b.Property<Guid>("AppointmentId")
-                        .HasColumnType("uniqueidentifier");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ReviewId"));
+
+                    b.Property<int>("AppointmentId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Comment")
                         .IsRequired()
@@ -224,11 +236,11 @@ namespace Docmate.Infrastructure.Persistence.Migrations
                     b.Property<DateTime?>("DateModified")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid>("DoctorId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("DoctorId")
+                        .HasColumnType("int");
 
-                    b.Property<Guid>("PatientId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("PatientId")
+                        .HasColumnType("int");
 
                     b.Property<int>("Rating")
                         .HasColumnType("int");
@@ -245,11 +257,20 @@ namespace Docmate.Infrastructure.Persistence.Migrations
                     b.ToTable("Reviews");
                 });
 
-            modelBuilder.Entity("Docmate.Domain.Entities.Specialty", b =>
+            modelBuilder.Entity("Docmate.Core.Domain.Entities.Specialty", b =>
                 {
-                    b.Property<string>("SpecialtyId")
+                    b.Property<int>("SpecialtyId")
+                        .ValueGeneratedOnAdd()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SpecialtyId"));
+
+                    b.Property<DateTime?>("DateCreated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DateModified")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -260,11 +281,13 @@ namespace Docmate.Infrastructure.Persistence.Migrations
                     b.ToTable("Specialties");
                 });
 
-            modelBuilder.Entity("Docmate.Domain.Entities.SymptomLog", b =>
+            modelBuilder.Entity("Docmate.Core.Domain.Entities.SymptomLog", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime?>("DateCreated")
                         .HasColumnType("datetime2");
@@ -272,8 +295,8 @@ namespace Docmate.Infrastructure.Persistence.Migrations
                     b.Property<DateTime?>("DateModified")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid>("PatientId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("PatientId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Symptoms")
                         .IsRequired()
@@ -286,14 +309,16 @@ namespace Docmate.Infrastructure.Persistence.Migrations
                     b.ToTable("SymptomLogs");
                 });
 
-            modelBuilder.Entity("Docmate.Domain.Entities.TimeSlot", b =>
+            modelBuilder.Entity("Docmate.Core.Domain.Entities.TimeSlot", b =>
                 {
-                    b.Property<Guid>("TimeSlotId")
+                    b.Property<int>("TimeSlotId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
 
-                    b.Property<Guid>("DoctorId")
-                        .HasColumnType("uniqueidentifier");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TimeSlotId"));
+
+                    b.Property<int>("DoctorId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("EndTime")
                         .HasColumnType("datetime2");
@@ -311,11 +336,13 @@ namespace Docmate.Infrastructure.Persistence.Migrations
                     b.ToTable("TimeSlots");
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<int>", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
@@ -339,7 +366,7 @@ namespace Docmate.Infrastructure.Persistence.Migrations
                     b.ToTable("AspNetRoles", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -353,8 +380,8 @@ namespace Docmate.Infrastructure.Persistence.Migrations
                     b.Property<string>("ClaimValue")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("RoleId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("RoleId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -363,7 +390,7 @@ namespace Docmate.Infrastructure.Persistence.Migrations
                     b.ToTable("AspNetRoleClaims", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<int>", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -377,8 +404,8 @@ namespace Docmate.Infrastructure.Persistence.Migrations
                     b.Property<string>("ClaimValue")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -387,7 +414,7 @@ namespace Docmate.Infrastructure.Persistence.Migrations
                     b.ToTable("AspNetUserClaims", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<System.Guid>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<int>", b =>
                 {
                     b.Property<string>("LoginProvider")
                         .HasColumnType("nvarchar(450)");
@@ -398,8 +425,8 @@ namespace Docmate.Infrastructure.Persistence.Migrations
                     b.Property<string>("ProviderDisplayName")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
 
                     b.HasKey("LoginProvider", "ProviderKey");
 
@@ -408,13 +435,13 @@ namespace Docmate.Infrastructure.Persistence.Migrations
                     b.ToTable("AspNetUserLogins", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<System.Guid>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<int>", b =>
                 {
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
 
-                    b.Property<Guid>("RoleId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("RoleId")
+                        .HasColumnType("int");
 
                     b.HasKey("UserId", "RoleId");
 
@@ -423,10 +450,10 @@ namespace Docmate.Infrastructure.Persistence.Migrations
                     b.ToTable("AspNetUserRoles", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<int>", b =>
                 {
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
 
                     b.Property<string>("LoginProvider")
                         .HasColumnType("nvarchar(450)");
@@ -442,15 +469,15 @@ namespace Docmate.Infrastructure.Persistence.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("Docmate.Domain.Entities.Appointment", b =>
+            modelBuilder.Entity("Docmate.Core.Domain.Entities.Appointment", b =>
                 {
-                    b.HasOne("Docmate.Domain.Entities.Doctor", "Doctor")
+                    b.HasOne("Docmate.Core.Domain.Entities.Doctor", "Doctor")
                         .WithMany("Appointments")
                         .HasForeignKey("DoctorId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Docmate.Domain.Entities.Patient", "Patient")
+                    b.HasOne("Docmate.Core.Domain.Entities.Patient", "Patient")
                         .WithMany("Appointments")
                         .HasForeignKey("PatientId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -461,17 +488,17 @@ namespace Docmate.Infrastructure.Persistence.Migrations
                     b.Navigation("Patient");
                 });
 
-            modelBuilder.Entity("Docmate.Domain.Entities.Doctor", b =>
+            modelBuilder.Entity("Docmate.Core.Domain.Entities.Doctor", b =>
                 {
-                    b.HasOne("Docmate.Domain.Entities.Specialty", "Specialty")
+                    b.HasOne("Docmate.Core.Domain.Entities.Specialty", "Specialty")
                         .WithMany("Doctors")
                         .HasForeignKey("SpecialtyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Docmate.Domain.Entities.ApplicationUser", "User")
+                    b.HasOne("Docmate.Core.Domain.Entities.ApplicationUser", "User")
                         .WithOne("Doctor")
-                        .HasForeignKey("Docmate.Domain.Entities.Doctor", "UserId")
+                        .HasForeignKey("Docmate.Core.Domain.Entities.Doctor", "UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -480,32 +507,32 @@ namespace Docmate.Infrastructure.Persistence.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Docmate.Domain.Entities.Patient", b =>
+            modelBuilder.Entity("Docmate.Core.Domain.Entities.Patient", b =>
                 {
-                    b.HasOne("Docmate.Domain.Entities.ApplicationUser", "User")
+                    b.HasOne("Docmate.Core.Domain.Entities.ApplicationUser", "User")
                         .WithOne("Patient")
-                        .HasForeignKey("Docmate.Domain.Entities.Patient", "UserId")
+                        .HasForeignKey("Docmate.Core.Domain.Entities.Patient", "UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Docmate.Domain.Entities.Review", b =>
+            modelBuilder.Entity("Docmate.Core.Domain.Entities.Review", b =>
                 {
-                    b.HasOne("Docmate.Domain.Entities.Appointment", "Appointment")
+                    b.HasOne("Docmate.Core.Domain.Entities.Appointment", "Appointment")
                         .WithOne("Review")
-                        .HasForeignKey("Docmate.Domain.Entities.Review", "AppointmentId")
+                        .HasForeignKey("Docmate.Core.Domain.Entities.Review", "AppointmentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Docmate.Domain.Entities.Doctor", "Doctor")
+                    b.HasOne("Docmate.Core.Domain.Entities.Doctor", "Doctor")
                         .WithMany()
                         .HasForeignKey("DoctorId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Docmate.Domain.Entities.Patient", "Patient")
+                    b.HasOne("Docmate.Core.Domain.Entities.Patient", "Patient")
                         .WithMany()
                         .HasForeignKey("PatientId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -518,9 +545,9 @@ namespace Docmate.Infrastructure.Persistence.Migrations
                     b.Navigation("Patient");
                 });
 
-            modelBuilder.Entity("Docmate.Domain.Entities.SymptomLog", b =>
+            modelBuilder.Entity("Docmate.Core.Domain.Entities.SymptomLog", b =>
                 {
-                    b.HasOne("Docmate.Domain.Entities.Patient", "Patient")
+                    b.HasOne("Docmate.Core.Domain.Entities.Patient", "Patient")
                         .WithMany("SymptomLogs")
                         .HasForeignKey("PatientId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -529,9 +556,9 @@ namespace Docmate.Infrastructure.Persistence.Migrations
                     b.Navigation("Patient");
                 });
 
-            modelBuilder.Entity("Docmate.Domain.Entities.TimeSlot", b =>
+            modelBuilder.Entity("Docmate.Core.Domain.Entities.TimeSlot", b =>
                 {
-                    b.HasOne("Docmate.Domain.Entities.Doctor", "Doctor")
+                    b.HasOne("Docmate.Core.Domain.Entities.Doctor", "Doctor")
                         .WithMany("TimeSlots")
                         .HasForeignKey("DoctorId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -540,58 +567,58 @@ namespace Docmate.Infrastructure.Persistence.Migrations
                     b.Navigation("Doctor");
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
                 {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", null)
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<int>", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<int>", b =>
                 {
-                    b.HasOne("Docmate.Domain.Entities.ApplicationUser", null)
+                    b.HasOne("Docmate.Core.Domain.Entities.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<System.Guid>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<int>", b =>
                 {
-                    b.HasOne("Docmate.Domain.Entities.ApplicationUser", null)
+                    b.HasOne("Docmate.Core.Domain.Entities.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<System.Guid>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<int>", b =>
                 {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", null)
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<int>", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Docmate.Domain.Entities.ApplicationUser", null)
+                    b.HasOne("Docmate.Core.Domain.Entities.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<int>", b =>
                 {
-                    b.HasOne("Docmate.Domain.Entities.ApplicationUser", null)
+                    b.HasOne("Docmate.Core.Domain.Entities.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Docmate.Domain.Entities.ApplicationUser", b =>
+            modelBuilder.Entity("Docmate.Core.Domain.Entities.ApplicationUser", b =>
                 {
                     b.Navigation("Doctor")
                         .IsRequired();
@@ -600,27 +627,27 @@ namespace Docmate.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Docmate.Domain.Entities.Appointment", b =>
+            modelBuilder.Entity("Docmate.Core.Domain.Entities.Appointment", b =>
                 {
                     b.Navigation("Review")
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Docmate.Domain.Entities.Doctor", b =>
+            modelBuilder.Entity("Docmate.Core.Domain.Entities.Doctor", b =>
                 {
                     b.Navigation("Appointments");
 
                     b.Navigation("TimeSlots");
                 });
 
-            modelBuilder.Entity("Docmate.Domain.Entities.Patient", b =>
+            modelBuilder.Entity("Docmate.Core.Domain.Entities.Patient", b =>
                 {
                     b.Navigation("Appointments");
 
                     b.Navigation("SymptomLogs");
                 });
 
-            modelBuilder.Entity("Docmate.Domain.Entities.Specialty", b =>
+            modelBuilder.Entity("Docmate.Core.Domain.Entities.Specialty", b =>
                 {
                     b.Navigation("Doctors");
                 });

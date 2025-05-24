@@ -11,6 +11,8 @@ namespace Docmate.Core.Services
         {
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<ITokenService, TokenService>();
+            services.AddScoped<IDoctorService, DoctorService>();
+            services.AddScoped<ISpecialtyService, SpecialtyService>();
             return services;
         }
     }

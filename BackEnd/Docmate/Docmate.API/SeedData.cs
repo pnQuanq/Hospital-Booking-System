@@ -7,7 +7,7 @@ namespace Docmate.API
     {
         public static async Task InitializeAsync(IServiceProvider serviceProvider)
         {
-            var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
+            var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole<int>>>();
             var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
             string[] roles = { "Admin", "Patient", "Doctor" };
@@ -15,7 +15,7 @@ namespace Docmate.API
             {
                 if (!await roleManager.RoleExistsAsync(role))
                 {
-                    await roleManager.CreateAsync(new IdentityRole<Guid>(role));
+                    await roleManager.CreateAsync(new IdentityRole<int>(role));
                 }
             }
 
@@ -27,7 +27,7 @@ namespace Docmate.API
                 {
                     UserName = "admin",
                     Email = adminEmail,
-                    Fullname = "System Administrator"
+                    FullName = "System Administrator"
                 };
                 await userManager.CreateAsync(adminUser, "Admin@123456");
                 await userManager.AddToRoleAsync(adminUser, "Admin");

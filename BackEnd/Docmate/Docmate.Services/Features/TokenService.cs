@@ -28,7 +28,7 @@ namespace Docmate.Core.Services.Features
             {
                 new Claim("UserId", user.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim("fullName", $"{user.Fullname}")
+                new Claim("fullName", $"{user.FullName}")
             };
 
             var roles = await _userManager.GetRolesAsync(user);

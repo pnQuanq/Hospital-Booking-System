@@ -60,7 +60,7 @@ namespace Docmate.Core.Services.Features
             {
                 UserName = registerDto.Email,
                 Email = registerDto.Email,
-                Fullname = registerDto.FullName
+                FullName = registerDto.FullName
             };
 
             var result = await _userManager.CreateAsync(user, registerDto.Password);

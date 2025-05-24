@@ -5,11 +5,11 @@ namespace Docmate.Core.Domain.Entities
 {
     public class Doctor : BaseEntity
     {
-        public Guid DoctorId { get; set; }
-        public Guid UserId { get; set; }
+        public int DoctorId { get; set; }
+        public int UserId { get; set; }
         public ApplicationUser User { get; set; }
 
-        public string SpecialtyId { get; set; }
+        public int SpecialtyId { get; set; }
         public Specialty Specialty { get; set; }
 
         public int ExperienceYears { get; set; }

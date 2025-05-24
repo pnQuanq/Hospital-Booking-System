@@ -6,8 +6,8 @@ namespace Docmate.Core.Domain.Entities
 {
     public class Patient : BaseEntity
     {
-        public Guid PatientId { get; set; }
-        public Guid UserId { get; set; }
+        public int PatientId { get; set; }
+        public int UserId { get; set; }
         public ApplicationUser User { get; set; }
 
         public string Gender { get; set; }

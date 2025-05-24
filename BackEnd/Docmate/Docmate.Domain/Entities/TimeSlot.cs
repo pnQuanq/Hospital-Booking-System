@@ -3,9 +3,9 @@ namespace Docmate.Core.Domain.Entities
 {
     public class TimeSlot
     {
-        public Guid TimeSlotId { get; set; }
+        public int TimeSlotId { get; set; }
 
-        public Guid DoctorId { get; set; }
+        public int DoctorId { get; set; }
         public Doctor Doctor { get; set; }
 
         public DateTime StartTime { get; set; }

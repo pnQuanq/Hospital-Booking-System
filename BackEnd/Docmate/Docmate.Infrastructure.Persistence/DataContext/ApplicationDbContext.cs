@@ -6,7 +6,7 @@ using Docmate.Core.Domain.Entities;
 
 namespace Docmate.Infrastructure.Persistence.DataContext
 {
-    public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityRole<int>, int>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 

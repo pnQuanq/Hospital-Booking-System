@@ -1,6 +1,8 @@
 ﻿
 using Docmate.Core.Domain.Entities;
+using Docmate.Core.Domain.Repositories;
 using Docmate.Infrastructure.Persistence.DataContext;
+using Docmate.Infrastructure.Persistence.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -15,6 +17,8 @@ namespace Docmate.Infrastructure.Persistence
     {
         public static IServiceCollection AddPersistenceServices(this IServiceCollection services, IConfiguration configuration)
         {
+            services.AddScoped<IDoctorRepository, DoctorRepository>();
+            services.AddScoped<ISpecialtyRepository, SpecialtyRepository>();
             // 1. Database
             services.AddDbContext<ApplicationDbContext>(options =>
             {
@@ -22,7 +26,7 @@ namespace Docmate.Infrastructure.Persistence
             });
 
             // 2. Identity setup
-            services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
+            services.AddIdentity<ApplicationUser, IdentityRole<int>>(options =>
             {
                 options.Password.RequireNonAlphanumeric = false;
                 options.Password.RequireUppercase = false;

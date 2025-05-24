@@ -1,8 +1,10 @@
-﻿namespace Docmate.Core.Domain.Entities
+﻿using Docmate.Core.Domain.Common;
+
+namespace Docmate.Core.Domain.Entities
 {
-    public class Specialty
+    public class Specialty : BaseEntity
     {
-        public string SpecialtyId { get; set; }
+        public int SpecialtyId { get; set; }
         public string Description { get; set; }
 
         public ICollection<Doctor> Doctors { get; set; }
