@@ -1,4 +1,5 @@
 ﻿
+using AutoMapper;
 using Docmate.Core.Contracts.Doctor;
 using Docmate.Core.Domain.Entities;
 using Docmate.Core.Domain.Repositories;
@@ -11,10 +12,14 @@ namespace Docmate.Core.Services.Features
     {
         private readonly IDoctorRepository _doctorRepository;
         private readonly IUserRepository _userRepository;
-        public DoctorService(IDoctorRepository doctorRepository, IUserRepository userRepository)
+        private readonly IMapper _mapper;
+        public DoctorService(IDoctorRepository doctorRepository,
+                             IUserRepository userRepository,
+                             IMapper mapper)
         {
             _doctorRepository = doctorRepository;
             _userRepository = userRepository;
+            _mapper = mapper;
         }
         public async Task AddDoctorAsync(AddDoctorDto dto)
         {
@@ -84,7 +89,17 @@ namespace Docmate.Core.Services.Features
 
             return true;
         }
+        public async Task<List<DoctorDto>> GetTopDoctorsAsync()
+        {
+            var doctors = await _doctorRepository.GetAllWithSpecialtyAsync();
 
+            var topDoctors = doctors
+                .OrderByDescending(d => d.Rating * 0.3 + d.ExperienceYears * 0.7)
+                .Take(10)
+                .ToList();
+
+            return _mapper.Map<List<DoctorDto>>(topDoctors);
+        }
 
 
     }
