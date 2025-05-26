@@ -1,9 +1,7 @@
 ﻿using Docmate.Core.Contracts.Doctor;
 using Docmate.Core.Contracts.Specialty;
 using Docmate.Core.Services.Abstractions.Features;
-using Docmate.Core.Services.Features;
 using Microsoft.AspNetCore.Mvc;
-using Swashbuckle.AspNetCore.Annotations;
 
 namespace Docmate.API.Controllers
 {

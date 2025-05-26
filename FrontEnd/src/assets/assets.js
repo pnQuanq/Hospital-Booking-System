@@ -41,6 +41,7 @@ import appointment_icon from "./appointment_icon.png";
 import add_icon from "./add_icon.png";
 import people_icon from "./people_icon.png";
 import upload_area from "./upload_area.png";
+import default_profile_pic from "./default-profile-pic.png";
 
 export const assets = {
   appointment_img,
@@ -64,7 +65,8 @@ export const assets = {
   appointment_icon,
   add_icon,
   people_icon,
-  upload_area
+  upload_area,
+  default_profile_pic,
 };
 
 export const specialityData = [
