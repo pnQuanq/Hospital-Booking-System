@@ -10,5 +10,7 @@ namespace Docmate.Core.Services.Abstractions.Features
         Task<List<DoctorDto>> GetAllDoctorsAsync();
         Task<bool> UpdateDoctorAsync(UpdateDoctorDto dto);
         Task<List<DoctorDto>> GetTopDoctorsAsync();
+        Task<DoctorDto?> GetDoctorDetailsAsync(int userId);
+
     }
 }

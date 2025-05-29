@@ -100,7 +100,27 @@ namespace Docmate.Core.Services.Features
 
             return _mapper.Map<List<DoctorDto>>(topDoctors);
         }
+        public async Task<DoctorDto?> GetDoctorDetailsAsync(int userId)
+        {
+            var doctor = await _doctorRepository.GetByIdWithUserAndSpecialtyAsync(userId);
+            if (doctor == null) return null;
 
+            return new DoctorDto
+            {
+                DoctorId = doctor.DoctorId,
+                FullName = doctor.User.FullName,
+                Email = doctor.User.Email,
+                ImageUrl = doctor.User.ImageUrl,
+
+                SpecialtyId = doctor.SpecialtyId,
+                SpecialtyDescription = doctor.Specialty?.Description,
+
+                ExperienceYears = doctor.ExperienceYears,
+                Description = doctor.Description,
+                Rating = doctor.Rating,
+                IsAvailable = doctor.IsAvailable,
+            };
+        }
 
     }
 }
