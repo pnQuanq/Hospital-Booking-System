@@ -1,5 +1,6 @@
 ﻿using Docmate.Core.Contracts.Patient;
 using Docmate.Core.Services.Abstractions.Features;
+using Docmate.Core.Services.Features;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -13,10 +14,14 @@ namespace Docmate.API.Controllers
     {
         private readonly IPatientService _patientService;
         private readonly IWebHostEnvironment _environment;
-        public PatientController(IPatientService patientService, IWebHostEnvironment environment)
+        private readonly IAppointmentService _appointmentService;
+        public PatientController(IPatientService patientService,
+                                 IWebHostEnvironment environment,
+                                 IAppointmentService appointmentService)
         {
             _patientService = patientService;
             _environment = environment;
+            _appointmentService = appointmentService;
         }
 
         [HttpPut("update-profile")]
@@ -84,5 +89,19 @@ namespace Docmate.API.Controllers
             if (result == null) return NotFound("Patient not found.");
             return Ok(result);
         }
+
+        [HttpGet("get-all-appointment")]
+        public async Task<IActionResult> GetAllAppointmentsByPatient([FromQuery] int userId)
+        {
+            try
+            {
+                var appointments = await _appointmentService.GetAppointmentsByPatientIdAsync(userId);
+                return Ok(appointments);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }     
     }
 }
