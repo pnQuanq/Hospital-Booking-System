@@ -825,3 +825,4 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+BackEnd/Docmate/Docmate.API/appsettings.Development.json
