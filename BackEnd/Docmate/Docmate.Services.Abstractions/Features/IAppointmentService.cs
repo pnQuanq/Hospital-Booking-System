@@ -6,5 +6,6 @@ namespace Docmate.Core.Services.Abstractions.Features
     {
         Task CreateAppointmentByUserIdAsync(int userId, int doctorId, DateTime date, string time);
         Task<List<AppointmentDto>> GetAppointmentsByPatientIdAsync(int patientId);
+        Task<bool> UpdateStatusAsync(UpdateAppointmentDto dto);
     }
 }

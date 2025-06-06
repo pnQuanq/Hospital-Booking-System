@@ -113,5 +113,18 @@ namespace Docmate.Core.Services.Features
                 Status = a.Status.ToString()
             }).ToList();
         }
+        public async Task<bool> UpdateStatusAsync(UpdateAppointmentDto dto)
+        {
+            var appointment = await _appointmentRepository.GetByIdAsync(dto.AppointmentId);
+            if (appointment == null) return false;
+
+            if (!Enum.TryParse<AppointmentStatus>(dto.NewStatus, out var status))
+                return false;
+
+            appointment.Status = status;
+            await _appointmentRepository.UpdateAsync(appointment);
+
+            return true;
+        }
     }
 }

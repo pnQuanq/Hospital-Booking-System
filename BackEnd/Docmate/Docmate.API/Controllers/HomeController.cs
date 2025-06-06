@@ -136,5 +136,14 @@ namespace Docmate.API.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+        [HttpPut("update-appointment")]
+        public async Task<IActionResult> UpdateAppointmentStatus([FromBody] UpdateAppointmentDto dto)
+        {
+            var result = await _appointmentService.UpdateStatusAsync(dto);
+            if (!result)
+                return BadRequest("Invalid appointment ID or status.");
+
+            return Ok("Appointment status updated successfully.");
+        }
     }
 }
