@@ -5,6 +5,7 @@ import axios from "axios";
 
 const MyAppointment = () => {
   const [appointments, setAppointments] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchAppointments = async () => {
@@ -38,6 +39,64 @@ const MyAppointment = () => {
     fetchAppointments();
   }, []);
 
+  const handleCancelAppointment = async (appointmentId) => {
+    const token = localStorage.getItem("AToken");
+    if (!token) {
+      alert("User not authenticated");
+      return;
+    }
+
+    // Confirm cancellation
+    if (!window.confirm("Are you sure you want to cancel this appointment?")) {
+      return;
+    }
+
+    setLoading(true);
+    
+    try {
+      const response = await axios.put(
+        "http://localhost:5000/api/home/update-appointment",
+        {
+          appointmentId: appointmentId,
+          newStatus: "Cancelled"
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          },
+        }
+      );
+
+      console.log("Cancel appointment response:", response.data);
+      
+      // Update the local state to reflect the change
+      setAppointments(prevAppointments =>
+        prevAppointments.map(appointment =>
+          appointment.appointmentId === appointmentId
+            ? { ...appointment, status: "Cancelled" }
+            : appointment
+        )
+      );
+
+      alert("Appointment cancelled successfully!");
+      
+    } catch (err) {
+      console.error("Failed to cancel appointment:", err);
+      
+      // Handle different error scenarios
+      if (err.response?.status === 400) {
+        alert("Invalid appointment ID or status. Please try again.");
+      } else if (err.response?.status === 401) {
+        alert("You are not authorized to perform this action.");
+      } else {
+        alert("Failed to cancel appointment. Please try again later.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div>
       <p className="pb-3 mt-12 font-medium text-zinc-700 border-b">
@@ -65,19 +124,45 @@ const MyAppointment = () => {
                 </p>
                 <p>{item.speciality}</p>
                 <p className="text-zinc-700 font-medium mt-1">Status:</p>
-                <p className="text-xs">{item.status}</p>
+                <p className={`text-xs font-medium ${
+                  item.status === "Cancelled" ? "text-red-600" : 
+                  item.status === "Confirmed" ? "text-green-600" : 
+                  "text-yellow-600"
+                }`}>
+                  {item.status}
+                </p>
                 <p className="text-zinc-700 font-medium mt-1">Date & Time:</p>
                 <p className="text-xs">
                   {new Date(item.date).toLocaleString()}
                 </p>
               </div>
               <div className="flex flex-col gap-2 justify-end">
-                <button className="cursor-pointer text-sm text-stone-500 text-center sm:min-w-48 py-2 border rounded hover:bg-blue-600 hover:text-white transition-all duration-300">
-                  Pay Online
-                </button>
-                <button className="cursor-pointer text-sm text-stone-500 text-center sm:min-w-48 py-2 border rounded hover:bg-red-600 hover:text-white transition-all duration-300">
-                  Cancel appointment
-                </button>
+                {/* Only show buttons if status is not "Cancelled" */}
+                {item.status !== "Cancelled" && (
+                  <>
+                    <button 
+                      className="cursor-pointer text-sm text-stone-500 text-center sm:min-w-48 py-2 border rounded hover:bg-blue-600 hover:text-white transition-all duration-300"
+                      disabled={loading}
+                    >
+                      Pay Online
+                    </button>
+                    <button 
+                      className={`cursor-pointer text-sm text-stone-500 text-center sm:min-w-48 py-2 border rounded hover:bg-red-600 hover:text-white transition-all duration-300 ${
+                        loading ? "opacity-50 cursor-not-allowed" : ""
+                      }`}
+                      onClick={() => handleCancelAppointment(item.appointmentId)}
+                      disabled={loading}
+                    >
+                      {loading ? "Cancelling..." : "Cancel appointment"}
+                    </button>
+                  </>
+                )}
+                {/* Show message for cancelled appointments */}
+                {item.status === "Cancelled" && (
+                  <p className="text-red-600 text-sm font-medium text-center sm:min-w-48 py-2">
+                    Appointment Cancelled
+                  </p>
+                )}
               </div>
             </div>
           ))
