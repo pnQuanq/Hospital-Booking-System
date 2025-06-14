@@ -1,6 +1,5 @@
 ﻿using Docmate.Core.Services.Abstractions.FactoryMethod;
 using Docmate.Core.Services.Abstractions.Features;
-using Docmate.Core.Services.Abstractions.Observer;
 using Docmate.Core.Services.FactoryMethod;
 using Docmate.Core.Services.Features;
 using Docmate.Core.Services.Mapper;
@@ -20,7 +19,7 @@ namespace Docmate.Core.Services
             services.AddScoped<IDoctorService, DoctorService>();
             services.AddScoped<ISpecialtyService, SpecialtyService>();
             services.AddScoped<IPatientService, PatientService>();
-            services.AddScoped<IAppointmentService, AppointmentService>();
+            //services.AddScoped<IAppointmentService, AppointmentService>();
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IEmailTemplateService, EmailTemplateService>();
 
