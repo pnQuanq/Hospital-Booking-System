@@ -145,5 +145,33 @@ namespace Docmate.API.Controllers
 
             return Ok("Appointment status updated successfully.");
         }
+        [HttpGet("get-doctor-reserved-slots/{doctorId:int}")]
+        public async Task<IActionResult> GetDoctorReservedSlots(int doctorId)
+        {
+            try
+            {
+                var slots = await _appointmentService.GetDoctorReservedSlotsAsync(doctorId);
+                return Ok(slots);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while fetching reserved slots for doctor {DoctorId}", doctorId);
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+        [HttpGet("get-doctor-confirmed-slots/{doctorId:int}")]
+        public async Task<IActionResult> GetDoctorConfirmedSlots(int doctorId)
+        {
+            try
+            {
+                var slots = await _appointmentService.GetDoctorReservedSlotsAsync(doctorId);
+                return Ok(slots);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while fetching confirmed slots for doctor {DoctorId}", doctorId);
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
     }
 }

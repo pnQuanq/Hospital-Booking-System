@@ -13,11 +13,27 @@ const Appointment = () => {
   const [docInfo, setDocInfo] = useState(null);
   const [docSlots, setDocSlots] = useState([]);
   const [slotIndex, setSlotIndex] = useState(0);
-  const [slotTime, setSlotTime] = useState("");
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState(null);
   const [timeSlotStartIndex, setTimeSlotStartIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const SLOTS_PER_VIEW = 7;
+
+  // TimeSlot Status enum (should match backend)
+  const TimeSlotStatus = {
+    Free: 0,
+    Reserved: 1,
+    Confirmed: 2,
+    Blocked: 3,
+  };
+
+  // Appointment Status enum
+  const AppointmentStatus = {
+    Pending: "Pending",
+    Scheduled: "Scheduled",
+    Completed: "Completed",
+    Cancelled: "Cancelled",
+  };
 
   const fetchDocInfo = async () => {
     try {
@@ -49,21 +65,75 @@ const Appointment = () => {
     }
   };
 
-  const getAvailableSlots = async () => {
+  const fetchAllReservedAndConfirmedSlots = async () => {
+    try {
+      const token = localStorage.getItem("AToken");
+
+      // Fetch both reserved and confirmed slots
+      const [reservedResponse, confirmedResponse] = await Promise.all([
+        fetch(
+          `http://localhost:5000/api/home/get-doctor-reserved-slots/${docId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        ),
+        fetch(
+          `http://localhost:5000/api/home/get-doctor-confirmed-slots/${docId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        ),
+      ]);
+
+      if (!reservedResponse.ok || !confirmedResponse.ok) {
+        throw new Error(
+          `HTTP error! Reserved: ${reservedResponse.status}, Confirmed: ${confirmedResponse.status}`
+        );
+      }
+
+      const [reservedSlots, confirmedSlots] = await Promise.all([
+        reservedResponse.json(),
+        confirmedResponse.json(),
+      ]);
+
+      // Combine both types of slots
+      const allUnavailableSlots = [...reservedSlots, ...confirmedSlots];
+      generateSlotsWithStatus(allUnavailableSlots);
+    } catch (error) {
+      console.error("Failed to fetch slots:", error);
+      setError("Failed to load slot availability. Please try again.");
+    }
+  };
+
+  const generateSlotsWithStatus = (unavailableSlots) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0); // Normalize to start of day
     const newDocSlots = [];
     let dayOffset = 1;
     let weekdaysAdded = 0;
 
-    // Get next 7 weekdays (Mon-Fri)
+    // Create a map of unavailable slots for quick lookup
+    const unavailableSlotsMap = new Map();
+    unavailableSlots.forEach((slot) => {
+      const slotDateTime = new Date(slot.time);
+      const key = `${slotDateTime.getFullYear()}-${slotDateTime.getMonth()}-${slotDateTime.getDate()}-${slotDateTime.getHours()}-${slotDateTime.getMinutes()}`;
+      unavailableSlotsMap.set(key, slot);
+    });
+
+    // Get next 7 weekdays (Mon-Fri) - only future days
     while (weekdaysAdded < 7) {
       const currentDate = new Date(today);
       currentDate.setDate(today.getDate() + dayOffset);
       const dayOfWeek = currentDate.getDay();
 
-      // Skip weekends (0 = Sunday, 6 = Saturday)
-      if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+      // Skip weekends (0 = Sunday, 6 = Saturday) and only include future dates
+      if (dayOfWeek !== 0 && dayOfWeek !== 6 && currentDate > today) {
         const timeSlots = [];
 
         // Morning slots (7:00 AM - 9:00 AM)
@@ -81,19 +151,34 @@ const Appointment = () => {
         // Generate morning slots
         let currentTime = new Date(morningStart);
         while (currentTime <= morningEnd) {
-          timeSlots.push(createTimeSlot(currentTime));
+          const now = new Date();
+          // Only add slots that are in the future
+          if (currentTime > now) {
+            timeSlots.push(
+              createTimeSlotWithStatus(currentTime, unavailableSlotsMap)
+            );
+          }
           currentTime.setMinutes(currentTime.getMinutes() + 30);
         }
 
         // Generate afternoon slots
         currentTime = new Date(afternoonStart);
         while (currentTime <= afternoonEnd) {
-          timeSlots.push(createTimeSlot(currentTime));
+          const now = new Date();
+          // Only add slots that are in the future
+          if (currentTime > now) {
+            timeSlots.push(
+              createTimeSlotWithStatus(currentTime, unavailableSlotsMap)
+            );
+          }
           currentTime.setMinutes(currentTime.getMinutes() + 30);
         }
 
-        newDocSlots.push(timeSlots);
-        weekdaysAdded++;
+        // Only add the day if it has available time slots
+        if (timeSlots.length > 0) {
+          newDocSlots.push(timeSlots);
+          weekdaysAdded++;
+        }
       }
       dayOffset++;
     }
@@ -101,7 +186,10 @@ const Appointment = () => {
     setDocSlots(newDocSlots);
   };
 
-  const createTimeSlot = (date) => {
+  const createTimeSlotWithStatus = (date, unavailableSlotsMap) => {
+    const key = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}-${date.getHours()}-${date.getMinutes()}`;
+    const unavailableSlot = unavailableSlotsMap.get(key);
+
     return {
       datetime: new Date(date),
       time: date
@@ -111,15 +199,59 @@ const Appointment = () => {
           hour12: true,
         })
         .replace(/AM|PM/, (match) => match.toLowerCase()),
+      status: unavailableSlot ? unavailableSlot.status : TimeSlotStatus.Free,
+      timeSlotId: unavailableSlot ? unavailableSlot.timeSlotId : null,
+      isUnavailable: !!unavailableSlot,
     };
   };
 
-  const handleSlotClick = (clickedSlotTime) => {
+  const getSlotStatusClass = (slot) => {
+    if (slot.isUnavailable) {
+      switch (slot.status) {
+        case TimeSlotStatus.Reserved:
+          return "text-orange-600 border border-orange-300 bg-orange-50 cursor-not-allowed";
+        case TimeSlotStatus.Confirmed:
+          return "text-red-600 border border-red-300 bg-red-50 cursor-not-allowed";
+        case TimeSlotStatus.Blocked:
+          return "text-gray-400 border border-gray-200 bg-gray-100 cursor-not-allowed";
+        default:
+          return "text-gray-400 border border-gray-200 bg-gray-100 cursor-not-allowed";
+      }
+    }
+    // Free slot - clickable
+    return "text-gray-600 border border-gray-300 hover:bg-gray-50 cursor-pointer";
+  };
+
+  const getSlotStatusText = (slot) => {
+    if (slot.isUnavailable) {
+      switch (slot.status) {
+        case TimeSlotStatus.Reserved:
+          return " (Reserved)";
+        case TimeSlotStatus.Confirmed:
+          return " (Booked)";
+        case TimeSlotStatus.Blocked:
+          return " (Blocked)";
+        default:
+          return " (Unavailable)";
+      }
+    }
+    return "";
+  };
+
+  const handleSlotClick = (slot) => {
+    // Only allow selection of Free slots
+    if (slot.isUnavailable || slot.status !== TimeSlotStatus.Free) {
+      return;
+    }
+
     // Toggle selection - if same slot clicked, deselect it
-    if (slotTime === clickedSlotTime) {
-      setSlotTime("");
+    if (
+      selectedTimeSlot &&
+      selectedTimeSlot.datetime.getTime() === slot.datetime.getTime()
+    ) {
+      setSelectedTimeSlot(null);
     } else {
-      setSlotTime(clickedSlotTime);
+      setSelectedTimeSlot(slot);
     }
   };
 
@@ -136,8 +268,8 @@ const Appointment = () => {
   };
 
   const bookAppointment = async () => {
-    if (!slotTime || !docSlots[slotIndex]) {
-      alert("Please select a time slot");
+    if (!selectedTimeSlot) {
+      alert("Please select an available time slot");
       return;
     }
 
@@ -148,21 +280,13 @@ const Appointment = () => {
     }
 
     try {
-      const selectedSlot = docSlots[slotIndex].find(
-        (slot) => slot.time === slotTime
-      );
-      if (!selectedSlot) {
-        alert("Invalid time slot selected");
-        return;
-      }
-
       const decodedToken = jwtDecode(token);
-      const patientId = parseInt(decodedToken?.UserId);
+      const userId = parseInt(decodedToken?.UserId);
 
       const appointmentData = {
         doctorId: parseInt(docId),
-        date: selectedSlot.datetime,
-        time: slotTime,
+        date: selectedTimeSlot.datetime.toISOString().split("T")[0], // Send date as YYYY-MM-DD
+        time: selectedTimeSlot.time,
       };
 
       const response = await fetch(
@@ -178,22 +302,22 @@ const Appointment = () => {
       );
 
       if (!response.ok) {
-        throw new Error(`Failed to book appointment: ${response.status}`);
+        const errorData = await response.json();
+        throw new Error(
+          errorData.message || `Failed to book appointment: ${response.status}`
+        );
       }
-      // Here you can implement the booking API call
-      console.log("Booking appointment:", {
-        doctorId: docId,
-        dateTime: selectedSlot.datetime,
-        time: slotTime,
-      });
 
-      alert(`Appointment booked successfully for ${slotTime}`);
+      alert(`Appointment booked successfully for ${selectedTimeSlot.time}`);
+
+      // Refresh slots to get updated status
+      await fetchAllReservedAndConfirmedSlots();
 
       // Reset selections
-      setSlotTime("");
+      setSelectedTimeSlot(null);
     } catch (error) {
       console.error("Failed to book appointment:", error);
-      alert("Failed to book appointment. Please try again.");
+      alert(`Failed to book appointment: ${error.message}`);
     }
   };
 
@@ -205,7 +329,7 @@ const Appointment = () => {
 
   useEffect(() => {
     if (docInfo) {
-      getAvailableSlots();
+      fetchAllReservedAndConfirmedSlots();
     }
   }, [docInfo]);
 
@@ -320,17 +444,17 @@ const Appointment = () => {
         </div>
       </div>
 
-      {/* Only show booking slots if doctor is available */}
-      {docInfo.isAvailable && (
+      {/* Only show booking slots if doctor is available and has time slots */}
+      {docInfo.isAvailable && docSlots.length > 0 && (
         <div className="sm:ml-72 sm:pl-4 mt-4 font-medium text-gray-700">
           <p>Booking slots</p>
           <div className="flex gap-3 items-center w-full overflow-x-scroll mt-4">
-            {docSlots.map((item, index) => (
+            {docSlots.map((daySlots, index) => (
               <div
                 key={index}
                 onClick={() => {
                   setSlotIndex(index);
-                  setSlotTime("");
+                  setSelectedTimeSlot(null);
                   setTimeSlotStartIndex(0); // Reset time slot view when changing day
                 }}
                 className={`text-center py-6 min-w-16 rounded-full cursor-pointer ${
@@ -339,8 +463,10 @@ const Appointment = () => {
                     : "border border-gray-200"
                 }`}
               >
-                <p>{item[0] && daysOfWeek[item[0].datetime.getDay()]}</p>
-                <p>{item[0] && item[0].datetime.getDate()}</p>
+                <p>
+                  {daySlots[0] && daysOfWeek[daySlots[0].datetime.getDay()]}
+                </p>
+                <p>{daySlots[0] && daySlots[0].datetime.getDate()}</p>
               </div>
             ))}
           </div>
@@ -361,19 +487,31 @@ const Appointment = () => {
 
             {/* Time slots */}
             <div className="flex items-center gap-3 flex-1 justify-center">
-              {getVisibleSlots().map((item, index) => (
-                <p
-                  key={timeSlotStartIndex + index}
-                  onClick={() => handleSlotClick(item.time)}
-                  className={`text-sm font-light flex-shrink-0 px-5 py-2 rounded-full cursor-pointer select-none transition-colors ${
-                    item.time === slotTime
+              {getVisibleSlots().map((slot, index) => (
+                <div
+                  key={`${
+                    timeSlotStartIndex + index
+                  }-${slot.datetime.getTime()}`}
+                  onClick={() => handleSlotClick(slot)}
+                  className={`text-sm font-light flex-shrink-0 px-5 py-2 rounded-full select-none transition-colors ${
+                    selectedTimeSlot &&
+                    selectedTimeSlot.datetime.getTime() ===
+                      slot.datetime.getTime()
                       ? "bg-blue-600 text-white"
-                      : "text-gray-400 border border-gray-300 hover:bg-gray-50"
+                      : getSlotStatusClass(slot)
                   }`}
                   style={{ userSelect: "none" }}
+                  title={
+                    slot.isUnavailable
+                      ? `This slot is ${getSlotStatusText(slot)
+                          .toLowerCase()
+                          .replace(/[()]/g, "")}`
+                      : "Click to select this time slot"
+                  }
                 >
-                  {item.time}
-                </p>
+                  {slot.time}
+                  {getSlotStatusText(slot)}
+                </div>
               ))}
             </div>
 
@@ -391,10 +529,33 @@ const Appointment = () => {
             </button>
           </div>
 
-          {slotTime && (
+          {/* Legend for slot status colors */}
+          <div className="mt-4 text-xs text-gray-500">
+            <p className="mb-2">Slot Status:</p>
+            <div className="flex gap-4 flex-wrap">
+              <span className="flex items-center gap-1">
+                <div className="w-3 h-3 border border-gray-300 rounded"></div>
+                Available
+              </span>
+              <span className="flex items-center gap-1">
+                <div className="w-3 h-3 border border-orange-300 bg-orange-50 rounded"></div>
+                Reserved
+              </span>
+              <span className="flex items-center gap-1">
+                <div className="w-3 h-3 border border-red-300 bg-red-50 rounded"></div>
+                Booked
+              </span>
+              <span className="flex items-center gap-1">
+                <div className="w-3 h-3 border border-gray-200 bg-gray-100 rounded"></div>
+                Blocked
+              </span>
+            </div>
+          </div>
+
+          {selectedTimeSlot && (
             <div className="my-4">
               <p className="text-sm text-gray-600 mb-2">
-                Selected slot: {slotTime}
+                Selected slot: {selectedTimeSlot.time}
               </p>
               <button
                 onClick={bookAppointment}
@@ -404,6 +565,14 @@ const Appointment = () => {
               </button>
             </div>
           )}
+        </div>
+      )}
+
+      {docInfo.isAvailable && docSlots.length === 0 && (
+        <div className="sm:ml-72 sm:pl-4 mt-4 text-center py-8">
+          <p className="text-gray-500 font-medium">
+            No available time slots for this doctor.
+          </p>
         </div>
       )}
 

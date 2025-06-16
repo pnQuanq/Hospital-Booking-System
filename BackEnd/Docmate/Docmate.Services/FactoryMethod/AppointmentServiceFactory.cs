@@ -21,8 +21,9 @@ namespace Docmate.Core.Services.FactoryMethod
             var appointmentRepo = _serviceProvider.GetRequiredService<IAppointmentRepository>();
             var patientRepo = _serviceProvider.GetRequiredService<IPatientRepository>();
             var doctorRepo = _serviceProvider.GetRequiredService<IDoctorRepository>();
+            var timeSlotRepo = _serviceProvider.GetRequiredService<ITimeSlotRepository>();
 
-            var appointmentService = new AppointmentService(appointmentRepo, patientRepo, doctorRepo);
+            var appointmentService = new AppointmentService(appointmentRepo, patientRepo, doctorRepo, timeSlotRepo);
 
             // Subscribe all observers
             var patientObserver = _serviceProvider.GetRequiredService<PatientEmailObserver>();

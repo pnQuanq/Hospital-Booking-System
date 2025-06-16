@@ -97,6 +97,11 @@ namespace Docmate.Infrastructure.Persistence.DataContext
                 .Property(a => a.Status)
                 .HasConversion<string>();
 
+            builder.Entity<TimeSlot>()
+                .Property(ts => ts.Status)
+                .HasConversion<string>();
+
+
             // Optional: enforce required relationships, lengths, etc.
             builder.Entity<Specialty>()
                 .HasKey(s => s.SpecialtyId);
