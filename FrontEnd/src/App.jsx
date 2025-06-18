@@ -16,6 +16,7 @@ import AddDoctor from "./pages/AddDoctor";
 import DoctorList from "./pages/DoctorList";
 import AdminLayout from "./layouts/AdminLayout.jsx";
 import SpecialtyManagement from "./pages/SpecialtyManagement.jsx";
+import HospitalChatbot from "./components/HospitalChatbot.jsx";
 
 const App = () => {
   const location = useLocation();
@@ -62,6 +63,7 @@ const App = () => {
         <Route path="/my-appointments" element={<MyAppointment />} />
         <Route path="/appointment/:docId" element={<Appointment />} />
       </Routes>
+      <HospitalChatbot />
       <Footer />
     </div>
   );
