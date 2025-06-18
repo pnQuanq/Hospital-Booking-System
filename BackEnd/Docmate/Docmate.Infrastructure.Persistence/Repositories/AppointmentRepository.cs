@@ -32,5 +32,17 @@ namespace Docmate.Infrastructure.Persistence.Repositories
                     .ThenInclude(d => d.Specialty)
                 .FirstOrDefaultAsync(a => a.AppointmentId == appointmentId);
         }
+        public async Task<List<Appointment>> GetAllAppointmentsWithDetailsAsync()
+        {
+            return await _context.Appointments
+                .Include(a => a.Patient)
+                    .ThenInclude(p => p.User)
+                .Include(a => a.Doctor)
+                    .ThenInclude(d => d.User)
+                .Include(a => a.Doctor)
+                    .ThenInclude(d => d.Specialty)
+                .OrderByDescending(a => a.Date)
+                .ToListAsync();
+        }
     }
 }

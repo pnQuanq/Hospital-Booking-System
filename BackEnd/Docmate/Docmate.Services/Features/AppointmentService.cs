@@ -201,6 +201,39 @@ namespace Docmate.Core.Services.Features
                 await _timeSlotRepository.UpdateAsync(timeSlot);
             }
         }
+        public async Task<List<AdminAppointmentDto>> GetAllAppointmentsForAdminAsync()
+        {
+            try
+            {
+                var appointments = await _appointmentRepository.GetAllAppointmentsWithDetailsAsync();
+
+                return appointments.Select(a => new AdminAppointmentDto
+                {
+                    AppointmentId = a.AppointmentId,
+                    PatientId = a.PatientId,
+                    PatientFullName = a.Patient.User.FullName,
+                    PatientImageUrl = a.Patient.User.ImageUrl,
+                    PatientDob = a.Patient.DateOfBirth ?? DateTime.MinValue,
+                    PatientEmail = a.Patient.User.Email,
+                    PatientPhone = a.Patient.User.PhoneNumber,
+
+                    DoctorId = a.DoctorId,
+                    DoctorName = a.Doctor.User.FullName,
+                    DoctorImageUrl = a.Doctor.User.ImageUrl,
+                    Specialty = a.Doctor.Specialty.Description,
+
+                    Date = a.Date,
+                    SlotDate = a.Date.ToString("dd MMM yyyy"),
+                    SlotTime = a.Date.ToString("hh:mm tt"),
+                    Status = a.Status.ToString(),
+
+                }).OrderByDescending(x => x.Date).ToList();
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Failed to retrieve appointments: {ex.Message}", ex);
+            }
+        }
         public async Task<List<TimeSlot>> GetDoctorReservedSlotsAsync(int doctorId)
         {
 

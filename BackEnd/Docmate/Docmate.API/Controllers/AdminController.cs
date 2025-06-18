@@ -1,6 +1,9 @@
-﻿using Docmate.Core.Contracts.Doctor;
+﻿using Docmate.Core.Contracts.Appointment;
+using Docmate.Core.Contracts.Doctor;
 using Docmate.Core.Contracts.Specialty;
 using Docmate.Core.Services.Abstractions.Features;
+using Docmate.Core.Services.Features;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Docmate.API.Controllers
@@ -12,12 +15,17 @@ namespace Docmate.API.Controllers
         private readonly IDoctorService _doctorService;
         private readonly ISpecialtyService _specialtyService;
         private readonly IWebHostEnvironment _environment;
+        private readonly IAppointmentService _appointmentService;
 
-        public AdminController(IDoctorService doctorService, IWebHostEnvironment environment, ISpecialtyService specialtyService)
+        public AdminController(IDoctorService doctorService,
+                               IWebHostEnvironment environment,
+                               ISpecialtyService specialtyService,
+                               IAppointmentService appointmentService)
         {
             _doctorService = doctorService;
             _environment = environment;
             _specialtyService = specialtyService;
+            _appointmentService = appointmentService;
         }
         [HttpGet("get-all-doctors")]
         public async Task<IActionResult> GetAllDoctors()
@@ -115,6 +123,35 @@ namespace Docmate.API.Controllers
             var specialties = await _specialtyService.GetAllSpecialtyAsync();
             return Ok(specialties);
         }
-
+        [HttpGet("all-appointments")]
+        public async Task<ActionResult<List<AdminAppointmentDto>>> GetAllAppointments()
+        {
+            try
+            {
+                var appointments = await _appointmentService.GetAllAppointmentsForAdminAsync();
+                return Ok(appointments);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while retrieving appointments", error = ex.Message });
+            }
+        }
+        [HttpPut("update-appointment-status")]
+        public async Task<ActionResult> UpdateAppointmentStatus([FromBody] UpdateAppointmentDto dto)
+        {
+            try
+            {
+                var result = await _appointmentService.UpdateStatusAsync(dto);
+                if (result)
+                {
+                    return Ok(new { message = "Appointment status updated successfully" });
+                }
+                return NotFound(new { message = "Appointment not found" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while updating appointment status", error = ex.Message });
+            }
+        }
     }
 }

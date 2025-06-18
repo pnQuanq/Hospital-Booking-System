@@ -6,5 +6,6 @@ namespace Docmate.Core.Domain.Repositories
     {
         Task<List<Appointment>> GetAppointmentsByPatientIdAsync(int patientId);
         Task<Appointment> GetByIdWithDetailsAsync(int appointmentId);
+        Task<List<Appointment>> GetAllAppointmentsWithDetailsAsync();
     }
 }

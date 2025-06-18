@@ -10,5 +10,6 @@ namespace Docmate.Core.Services.Abstractions.Features
         Task<bool> UpdateStatusAsync(UpdateAppointmentDto dto);
         Task<List<TimeSlot>> GetDoctorConfirmedSlotsAsync(int doctorId);
         Task<List<TimeSlot>> GetDoctorReservedSlotsAsync(int doctorId);
+        Task<List<AdminAppointmentDto>> GetAllAppointmentsForAdminAsync();
     }
 }
