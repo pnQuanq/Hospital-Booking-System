@@ -14,13 +14,26 @@ namespace Docmate.Core.Services.Features
         private readonly IConfiguration _configuration;
         private readonly ILogger<OpenAIService> _logger;
         private readonly string _apiKey;
+        private readonly string _model;
+        private readonly int _maxTokens;
+        private readonly double _temperature;
 
         public OpenAIService(HttpClient httpClient, IConfiguration configuration, ILogger<OpenAIService> logger)
         {
             _httpClient = httpClient;
             _configuration = configuration;
             _logger = logger;
+
+            // Load configuration values
             _apiKey = _configuration["OpenAI:ApiKey"];
+            _model = _configuration["OpenAI:Model"] ?? "gpt-3.5-turbo";
+            _maxTokens = _configuration.GetValue<int>("OpenAI:MaxTokens", 500);
+            _temperature = _configuration.GetValue<double>("OpenAI:Temperature", 0.7);
+
+            if (string.IsNullOrEmpty(_apiKey))
+            {
+                throw new InvalidOperationException("OpenAI API Key is not configured");
+            }
 
             _httpClient.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", _apiKey);
@@ -50,17 +63,19 @@ namespace Docmate.Core.Services.Features
 
                 var requestBody = new
                 {
-                    model = "gpt-3.5-turbo",
+                    model = _model,
                     messages = messages,
-                    max_tokens = 500,
-                    temperature = 0.7,
-                    top_p = 1,
-                    frequency_penalty = 0,
-                    presence_penalty = 0
+                    max_tokens = _maxTokens,
+                    temperature = _temperature,
+                    top_p = _configuration.GetValue<double>("OpenAI:TopP", 1.0),
+                    frequency_penalty = _configuration.GetValue<double>("OpenAI:FrequencyPenalty", 0.0),
+                    presence_penalty = _configuration.GetValue<double>("OpenAI:PresencePenalty", 0.0)
                 };
 
                 var jsonContent = JsonSerializer.Serialize(requestBody);
                 var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+                _logger.LogDebug("Sending request to OpenAI API with model: {Model}", _model);
 
                 var response = await _httpClient.PostAsync("https://api.openai.com/v1/chat/completions", content);
 
@@ -77,8 +92,11 @@ namespace Docmate.Core.Services.Features
                     PropertyNamingPolicy = JsonNamingPolicy.CamelCase
                 });
 
-                return chatResponse?.Choices?.FirstOrDefault()?.Message?.Content ??
-                       "I'm sorry, I couldn't process your request at the moment.";
+                var result = chatResponse?.Choices?.FirstOrDefault()?.Message?.Content ??
+                           "I'm sorry, I couldn't process your request at the moment.";
+
+                _logger.LogDebug("OpenAI API response received successfully");
+                return result;
             }
             catch (Exception ex)
             {
