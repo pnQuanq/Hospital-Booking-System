@@ -17,7 +17,7 @@ namespace Docmate.Infrastructure.Persistence.DataContext
         public DbSet<Specialty> Specialties { get; set; }
         public DbSet<TimeSlot> TimeSlots { get; set; }
         public DbSet<SymptomLog> SymptomLogs { get; set; }
-        public DbSet<ChatConversation> ChatConversations { get; set; }
+        public DbSet<ChatSession> ChatSessions { get; set; }
         public DbSet<ChatMessage> ChatMessages { get; set; }
 
 
@@ -110,10 +110,11 @@ namespace Docmate.Infrastructure.Persistence.DataContext
                 .Property(s => s.SpecialtyId)
                 .HasMaxLength(50);
 
-            builder.Entity<ChatConversation>()
+            builder.Entity<ChatSession>()
                 .HasMany(c => c.Messages)
-                .WithOne(m => m.Conversation)
-                .HasForeignKey(m => m.ConversationId);
+                .WithOne(m => m.ChatSession)
+                .HasForeignKey(m => m.ChatSessionId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
         public override int SaveChanges()
         {

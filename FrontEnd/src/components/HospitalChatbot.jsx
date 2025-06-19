@@ -13,8 +13,43 @@ const HospitalChatbot = () => {
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [sessionId, setSessionId] = useState(null);
+  const [userInfo, setUserInfo] = useState(null);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+
+  // JWT Token decoder function
+  const decodeJWT = (token) => {
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
+      );
+      return JSON.parse(jsonPayload);
+    } catch (error) {
+      console.error('Error decoding JWT:', error);
+      return null;
+    }
+  };
+
+  // Get user info from JWT token
+  useEffect(() => {
+    const token = localStorage.getItem('AToken');
+    if (token) {
+      const decoded = decodeJWT(token);
+      if (decoded) {
+        setUserInfo({
+          userId: parseInt(decoded.UserId),
+          fullName: decoded.fullName,
+          role: decoded.Role
+        });
+      }
+    }
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -41,26 +76,47 @@ const HospitalChatbot = () => {
     };
 
     setMessages((prev) => [...prev, userMessage]);
+    const currentMessage = inputMessage;
     setInputMessage("");
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/chatbot/chat", {
+      const token = localStorage.getItem('AToken');
+      
+      const requestBody = {
+        message: currentMessage,
+        userId: userInfo?.userId || null,
+        sessionId: sessionId
+      };
+
+      const headers = {
+        "Content-Type": "application/json",
+      };
+
+      // Add Authorization header if token exists
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+
+      const response = await fetch("http://localhost:5000/api/chat/chat", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          message: inputMessage,
-          userId: localStorage.getItem("userId") || null, // If you have user context
-        }),
+        headers: headers,
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to get response");
+        if (response.status === 401) {
+          throw new Error("Authentication required. Please log in again.");
+        }
+        throw new Error(`Server error: ${response.status}`);
       }
 
       const data = await response.json();
+
+      // Store session ID for future requests
+      if (data.sessionId && !sessionId) {
+        setSessionId(data.sessionId);
+      }
 
       const botMessage = {
         id: Date.now() + 1,
@@ -72,9 +128,15 @@ const HospitalChatbot = () => {
       setMessages((prev) => [...prev, botMessage]);
     } catch (error) {
       console.error("Error sending message:", error);
+      let errorText = "I'm sorry, I'm having trouble connecting right now. Please try again later or contact our support team.";
+      
+      if (error.message.includes("Authentication")) {
+        errorText = "Please log in to continue using the chat service.";
+      }
+
       const errorMessage = {
         id: Date.now() + 1,
-        text: "I'm sorry, I'm having trouble connecting right now. Please try again later or contact our support team.",
+        text: errorText,
         isBot: true,
         timestamp: new Date(),
         isError: true,
@@ -82,6 +144,32 @@ const HospitalChatbot = () => {
       setMessages((prev) => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const loadChatHistory = async () => {
+    if (!sessionId) return;
+
+    try {
+      const token = localStorage.getItem('AToken');
+      const headers = {};
+      
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+
+      const response = await fetch(`http://localhost:5000/api/chat/history/${sessionId}`, {
+        method: "GET",
+        headers: headers,
+      });
+
+      if (response.ok) {
+        const history = await response.json();
+        // Process history and update messages if needed
+        console.log("Chat history loaded:", history);
+      }
+    } catch (error) {
+      console.error("Error loading chat history:", error);
     }
   };
 
@@ -108,6 +196,16 @@ const HospitalChatbot = () => {
     });
   };
 
+  const handleQuickAction = (action) => {
+    setInputMessage(action);
+    // Auto-focus input after setting message
+    setTimeout(() => {
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
+    }, 100);
+  };
+
   if (!isOpen) {
     return (
       <div className="fixed bottom-6 right-6 z-50">
@@ -129,7 +227,9 @@ const HospitalChatbot = () => {
           <Bot size={20} />
           <div>
             <h3 className="font-semibold">Hospital Assistant</h3>
-            <p className="text-blue-100 text-xs">Online</p>
+            <p className="text-blue-100 text-xs">
+              {userInfo ? `Hello, ${userInfo.fullName}` : "Online"}
+            </p>
           </div>
         </div>
         <button
@@ -241,7 +341,7 @@ const HospitalChatbot = () => {
           ].map((action) => (
             <button
               key={action}
-              onClick={() => setInputMessage(action)}
+              onClick={() => handleQuickAction(action)}
               className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-2 py-1 rounded-full transition-colors"
               disabled={isLoading}
             >

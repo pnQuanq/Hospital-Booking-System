@@ -8,18 +8,54 @@ namespace Docmate.API.Controllers
     [ApiController]
     public class ChatController : Controller
     {
-        private readonly IOpenAIService _openAIService;
-
-        public ChatController(IOpenAIService openAIService)
+        private readonly IChatbotService _chatbotService;
+        public ChatController(IChatbotService chatbotService)
         {
-            _openAIService = openAIService;
+            _chatbotService = chatbotService;
         }
 
-        [HttpPost("ask")]
-        public async Task<IActionResult> Ask([FromBody] AskChatRequestDto request)
+        [HttpPost("chat")]
+        public async Task<ActionResult<ChatResponseDto>> Chat([FromBody] ChatMessageDto request)
         {
-            var response = await _openAIService.AskChatbotAsync(request.Question, request.History);
-            return Ok(new { answer = response });
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                var response = await _chatbotService.ProcessMessageAsync(request);
+
+                if (!response.Success)
+                {
+                    return StatusCode(500, response);
+                }
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new ChatResponseDto
+                {
+                    Success = false,
+                    ErrorMessage = "Internal server error",
+                    Response = "I'm sorry, I'm experiencing technical difficulties. Please try again later."
+                });
+            }
+        }
+
+        [HttpGet("history/{sessionId}")]
+        public async Task<ActionResult<List<ChatHistoryDto>>> GetChatHistory(string sessionId)
+        {
+            try
+            {
+                var history = await _chatbotService.GetChatHistoryAsync(sessionId);
+                return Ok(history);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Error retrieving chat history");
+            }
         }
     }
 }

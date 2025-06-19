@@ -4,6 +4,7 @@ using Docmate.Infrastructure.Persistence.DataContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Docmate.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250618034258_fix-chatbot-entities")]
+    partial class fixchatbotentities
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -182,9 +185,6 @@ namespace Docmate.Infrastructure.Persistence.Migrations
                     b.Property<DateTime?>("DateModified")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime>("LastActiveAt")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("SessionId")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -194,7 +194,7 @@ namespace Docmate.Infrastructure.Persistence.Migrations
 
                     b.HasKey("ChatSessionId");
 
-                    b.ToTable("ChatSessions");
+                    b.ToTable("ChatConversations");
                 });
 
             modelBuilder.Entity("Docmate.Core.Domain.Entities.Doctor", b =>

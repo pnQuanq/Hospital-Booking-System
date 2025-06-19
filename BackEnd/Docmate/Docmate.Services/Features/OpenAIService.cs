@@ -1,43 +1,107 @@
-﻿using Docmate.Core.Contracts.Chat;
+﻿using Docmate.Core.Domain.Entities;
 using Docmate.Core.Services.Abstractions.Features;
-using System.Net.Http.Json;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using System.Net.Http.Headers;
+using System.Text;
 using System.Text.Json;
 
 namespace Docmate.Core.Services.Features
 {
     public class OpenAIService : IOpenAIService
     {
-        private readonly string _apiKey = "YOUR_API_KEY";
+        private readonly HttpClient _httpClient;
+        private readonly IConfiguration _configuration;
+        private readonly ILogger<OpenAIService> _logger;
+        private readonly string _apiKey;
 
-        public async Task<string> AskChatbotAsync(string question, List<ChatMessageDto>? history = null)
+        public OpenAIService(HttpClient httpClient, IConfiguration configuration, ILogger<OpenAIService> logger)
         {
-            using var httpClient = new HttpClient();
-            httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {_apiKey}");
+            _httpClient = httpClient;
+            _configuration = configuration;
+            _logger = logger;
+            _apiKey = _configuration["OpenAI:ApiKey"];
 
-            var messages = new List<object>
-        {
-            new { role = "system", content = "You are a helpful medical assistant for a hospital." }
-        };
-
-            if (history != null)
-            {
-                foreach (var msg in history)
-                    messages.Add(new { role = msg.IsFromUser ? "user" : "assistant", content = msg.Content });
-            }
-
-            messages.Add(new { role = "user", content = question });
-
-            var request = new
-            {
-                model = "gpt-3.5-turbo",
-                messages = messages,
-                temperature = 0.2
-            };
-
-            var response = await httpClient.PostAsJsonAsync("https://api.openai.com/v1/chat/completions", request);
-            var json = await response.Content.ReadFromJsonAsync<JsonElement>();
-
-            return json.GetProperty("choices")[0].GetProperty("message").GetProperty("content").GetString();
+            _httpClient.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", _apiKey);
         }
+
+        public async Task<string> GetChatCompletionAsync(string userMessage, string systemPrompt, List<ChatMessage> conversationHistory = null)
+        {
+            try
+            {
+                var messages = new List<object>
+                {
+                    new { role = "system", content = systemPrompt }
+                };
+
+                // Add conversation history for context
+                if (conversationHistory != null)
+                {
+                    foreach (var msg in conversationHistory)
+                    {
+                        messages.Add(new { role = "user", content = msg.UserMessage });
+                        messages.Add(new { role = "assistant", content = msg.BotResponse });
+                    }
+                }
+
+                // Add current user message
+                messages.Add(new { role = "user", content = userMessage });
+
+                var requestBody = new
+                {
+                    model = "gpt-3.5-turbo",
+                    messages = messages,
+                    max_tokens = 500,
+                    temperature = 0.7,
+                    top_p = 1,
+                    frequency_penalty = 0,
+                    presence_penalty = 0
+                };
+
+                var jsonContent = JsonSerializer.Serialize(requestBody);
+                var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+                var response = await _httpClient.PostAsync("https://api.openai.com/v1/chat/completions", content);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    _logger.LogError("OpenAI API error: {StatusCode} - {Content}", response.StatusCode, errorContent);
+                    throw new HttpRequestException($"OpenAI API error: {response.StatusCode}");
+                }
+
+                var responseContent = await response.Content.ReadAsStringAsync();
+                var chatResponse = JsonSerializer.Deserialize<OpenAIChatResponse>(responseContent, new JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                });
+
+                return chatResponse?.Choices?.FirstOrDefault()?.Message?.Content ??
+                       "I'm sorry, I couldn't process your request at the moment.";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error calling OpenAI API");
+                throw new InvalidOperationException("Failed to get AI response", ex);
+            }
+        }
+    }
+
+    // OpenAI Response Models
+    public class OpenAIChatResponse
+    {
+        public List<ChatChoice> Choices { get; set; }
+    }
+
+    public class ChatChoice
+    {
+        public OpenAIChatMessage Message { get; set; }
+    }
+
+    public class OpenAIChatMessage
+    {
+        public string Role { get; set; }
+        public string Content { get; set; }
     }
 }

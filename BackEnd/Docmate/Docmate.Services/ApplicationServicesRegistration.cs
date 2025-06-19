@@ -19,6 +19,8 @@ namespace Docmate.Core.Services
             services.AddScoped<IDoctorService, DoctorService>();
             services.AddScoped<ISpecialtyService, SpecialtyService>();
             services.AddScoped<IPatientService, PatientService>();
+            services.AddScoped<IChatbotService, ChatbotService>();
+            services.AddHttpClient<IOpenAIService, OpenAIService>();
             //services.AddScoped<IAppointmentService, AppointmentService>();
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IEmailTemplateService, EmailTemplateService>();
