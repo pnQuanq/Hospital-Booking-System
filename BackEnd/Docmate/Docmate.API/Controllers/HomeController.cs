@@ -173,5 +173,19 @@ namespace Docmate.API.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+        [HttpGet("get-all-specialties")]
+        public async Task<IActionResult> GetAllSpecialtiesAsync()
+        {
+            try
+            {
+                var specialties = await _specialtyService.GetAllSpecialtyAsync();
+                return Ok(specialties);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while fetching specialties");
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
     }
 }
