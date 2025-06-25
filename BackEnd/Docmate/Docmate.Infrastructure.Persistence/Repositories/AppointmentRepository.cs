@@ -17,8 +17,18 @@ namespace Docmate.Infrastructure.Persistence.Repositories
                 .Include(a => a.Doctor)
                     .ThenInclude(d => d.User)
                 .Include(a => a.Doctor)
-                    .ThenInclude(s => s.Specialty)
+                    .ThenInclude(d => d.Specialty)
                 .Where(a => a.PatientId == patientId)
+                .ToListAsync();
+        }
+        public async Task<List<Appointment>> GetAppointmentsByDoctorIdAsync(int doctorId)
+        {
+            return await _context.Appointments
+                .Include(a => a.Doctor)
+                    .ThenInclude(d => d.User)
+                .Include(a => a.Doctor)
+                    .ThenInclude(d => d.Specialty)
+                .Where(a => a.DoctorId == doctorId)
                 .ToListAsync();
         }
         public async Task<Appointment> GetByIdWithDetailsAsync(int appointmentId)

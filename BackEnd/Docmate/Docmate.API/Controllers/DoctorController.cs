@@ -37,6 +37,25 @@ namespace Docmate.API.Controllers
             if (result == null) return NotFound("Doctor not found.");
             return Ok(result);
         }
+        [HttpGet("get-all-appointments")]
+        public async Task<IActionResult> GetAllAppointments()
+        {
+            var userIdClaim = User.FindFirst("UserId")?.Value;
+            if (!int.TryParse(userIdClaim, out var userId))
+            {
+                return Unauthorized("Invalid or missing user ID claim.");
+            }
 
+            try
+            {
+                var result = await _appointmentService.GetAppointmentsByDoctorIdAsync(userId);
+                if (result == null) return NotFound("Doctor not found.");
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
     }
 }

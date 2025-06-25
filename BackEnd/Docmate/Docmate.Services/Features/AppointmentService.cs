@@ -129,7 +129,6 @@ namespace Docmate.Core.Services.Features
                 throw new InvalidOperationException($"Failed to create appointment: {ex.Message}", ex);
             }
         }
-
         public async Task<List<AppointmentDto>> GetAppointmentsByPatientIdAsync(int userId)
         {
             var patient = await _patientRepository.GetByUserIdAsync(userId);
@@ -139,6 +138,27 @@ namespace Docmate.Core.Services.Features
             }
 
             var appointments = await _appointmentRepository.GetAppointmentsByPatientIdAsync(patient.PatientId);
+
+            return appointments.Select(a => new AppointmentDto
+            {
+                AppointmentId = a.AppointmentId,
+                DoctorId = a.DoctorId,
+                DoctorName = a.Doctor.User.FullName,
+                DoctorImageUrl = a.Doctor.User.ImageUrl,
+                Specialty = a.Doctor.Specialty.Description,
+                Date = a.Date,
+                Status = a.Status.ToString()
+            }).ToList();
+        }
+        public async Task<List<AppointmentDto>> GetAppointmentsByDoctorIdAsync(int userId)
+        {
+            var doctor = await _doctorRepository.GetByUserIdAsync(userId);
+            if (doctor == null)
+            {
+                throw new ArgumentException($"No doctor found for User ID {userId}");
+            }
+
+            var appointments = await _appointmentRepository.GetAppointmentsByDoctorIdAsync(doctor.DoctorId);
 
             return appointments.Select(a => new AppointmentDto
             {

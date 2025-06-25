@@ -7,5 +7,6 @@ namespace Docmate.Core.Domain.Repositories
     {
         Task<List<Doctor>> GetAllWithSpecialtyAsync();
         Task<Doctor> GetByIdWithUserAndSpecialtyAsync(int id);
+        Task<Doctor> GetByUserIdAsync(int userId);
     }
 }
