@@ -207,13 +207,13 @@ const DoctorAppointment = () => {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Doctor
+                  Patient
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Date & Time
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Specialty
+                  Gender
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
@@ -246,11 +246,11 @@ const DoctorAppointment = () => {
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        {appointment.doctorImageUrl ? (
+                        {appointment.patientImageUrl ? (
                           <img
                             className="h-10 w-10 rounded-full mr-3"
-                            src={appointment.doctorImageUrl}
-                            alt={appointment.doctorName}
+                            src={`http://localhost:5000${appointment.doctorImageUrl}`}
+                            alt={appointment.patientName}
                           />
                         ) : (
                           <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center mr-3">
@@ -259,10 +259,10 @@ const DoctorAppointment = () => {
                         )}
                         <div>
                           <div className="font-medium text-gray-900">
-                            {appointment.doctorName}
+                            {appointment.patientName}
                           </div>
                           <div className="text-sm text-gray-500">
-                            ID: {appointment.doctorId}
+                            ID: {appointment.patientId}
                           </div>
                         </div>
                       </div>
@@ -278,7 +278,7 @@ const DoctorAppointment = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {appointment.specialty}
+                      {appointment.patientGender}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span

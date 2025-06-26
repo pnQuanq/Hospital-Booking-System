@@ -9,6 +9,10 @@
         public string Status { get; set; }
         public string DoctorImageUrl { get; set; }
         public string Specialty {  get; set; }
+        public string PatientName { get; set; }
+        public int PatientId { get; set; }
+        public string PatientImageUrl { get; set; }
+        public string PatientGender { get; set; }
 
     }
 }

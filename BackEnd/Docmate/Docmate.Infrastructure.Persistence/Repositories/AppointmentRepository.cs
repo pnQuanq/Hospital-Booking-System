@@ -24,6 +24,8 @@ namespace Docmate.Infrastructure.Persistence.Repositories
         public async Task<List<Appointment>> GetAppointmentsByDoctorIdAsync(int doctorId)
         {
             return await _context.Appointments
+                .Include (p => p.Patient)
+                    .ThenInclude(p => p.User)
                 .Include(a => a.Doctor)
                     .ThenInclude(d => d.User)
                 .Include(a => a.Doctor)

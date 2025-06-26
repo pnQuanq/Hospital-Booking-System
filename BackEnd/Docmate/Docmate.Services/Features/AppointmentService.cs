@@ -166,6 +166,10 @@ namespace Docmate.Core.Services.Features
                 DoctorId = a.DoctorId,
                 DoctorName = a.Doctor.User.FullName,
                 DoctorImageUrl = a.Doctor.User.ImageUrl,
+                PatientId = a.PatientId,
+                PatientImageUrl = a.Patient.User.ImageUrl,
+                PatientGender = a.Patient.Gender,
+                PatientName = a.Patient.User.FullName,
                 Specialty = a.Doctor.Specialty.Description,
                 Date = a.Date,
                 Status = a.Status.ToString()
