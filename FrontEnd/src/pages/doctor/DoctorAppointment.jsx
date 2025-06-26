@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { jwtDecode } from "jwt-decode";
 import {
   Search,
   Filter,
@@ -9,6 +8,14 @@ import {
   Calendar,
   Clock,
   User,
+  X,
+  Phone,
+  Mail,
+  MapPin,
+  FileText,
+  Weight,
+  Ruler,
+  AlertTriangle,
 } from "lucide-react";
 
 const DoctorAppointment = () => {
@@ -17,6 +24,8 @@ const DoctorAppointment = () => {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredAppointments, setFilteredAppointments] = useState([]);
+  const [selectedAppointment, setSelectedAppointment] = useState(null);
+  const [showModal, setShowModal] = useState(false);
 
   // Fetch appointments from API
   useEffect(() => {
@@ -124,8 +133,13 @@ const DoctorAppointment = () => {
   };
 
   const handleViewAppointment = (appointmentId) => {
-    console.log("View appointment:", appointmentId);
-    // Implement view logic
+    const appointment = appointments.find(
+      (apt) => apt.appointmentId === appointmentId
+    );
+    if (appointment) {
+      setSelectedAppointment(appointment);
+      setShowModal(true);
+    }
   };
 
   const handleConfirmAppointment = (appointmentId) => {
@@ -136,6 +150,205 @@ const DoctorAppointment = () => {
   const handleCancelAppointment = (appointmentId) => {
     console.log("Cancel appointment:", appointmentId);
     // Implement cancel logic
+  };
+
+  // Modal component for appointment details
+  const AppointmentDetailModal = () => {
+    if (!showModal || !selectedAppointment) return null;
+
+    return (
+      <div className="fixed inset-0 backdrop-blur-sm bg-white/30 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          {/* Modal Header */}
+          <div className="flex items-center justify-between p-6 border-b">
+            <h3 className="text-xl font-semibold text-gray-900">
+              Appointment Details
+            </h3>
+            <button
+              onClick={() => setShowModal(false)}
+              className="text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <X className="h-6 w-6" />
+            </button>
+          </div>
+
+          {/* Modal Content */}
+          <div className="p-6 space-y-6">
+            {/* Patient Information */}
+            <div className="bg-gray-50 rounded-lg p-4">
+              <h4 className="font-medium text-gray-900 mb-3 flex items-center">
+                <User className="h-5 w-5 mr-2 text-blue-600" />
+                Patient Information
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex items-center space-x-3">
+                  {selectedAppointment.patientImageUrl ? (
+                    <img
+                      className="h-12 w-12 rounded-full"
+                      src={`http://localhost:5000${selectedAppointment.patientImageUrl}`}
+                      alt={selectedAppointment.patientName}
+                    />
+                  ) : (
+                    <div className="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center">
+                      <User className="h-6 w-6 text-gray-400" />
+                    </div>
+                  )}
+                  <div>
+                    <p className="font-medium text-gray-900">
+                      {selectedAppointment.patientName}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      ID: {selectedAppointment.patientId}
+                    </p>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center text-sm">
+                    <span className="font-medium text-gray-600 w-20">
+                      Gender:
+                    </span>
+                    <span className="text-gray-900">
+                      {selectedAppointment.patientGender}
+                    </span>
+                  </div>
+                  {selectedAppointment.patientAge && (
+                    <div className="flex items-center text-sm">
+                      <span className="font-medium text-gray-600 w-20">
+                        Age:
+                      </span>
+                      <span className="text-gray-900">
+                        {selectedAppointment.patientAge}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Patient Physical Information */}
+            {(selectedAppointment.patientWeight ||
+              selectedAppointment.patientHeight) && (
+              <div className="bg-indigo-50 rounded-lg p-4">
+                <h4 className="font-medium text-gray-900 mb-3 flex items-center">
+                  <Ruler className="h-5 w-5 mr-2 text-indigo-600" />
+                  Physical Information
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {selectedAppointment.patientWeight && (
+                    <div className="flex items-center text-sm">
+                      <Weight className="h-4 w-4 mr-2 text-gray-400" />
+                      <span className="font-medium text-gray-600">Weight:</span>
+                      <span className="ml-2 text-gray-900">
+                        {selectedAppointment.patientWeight} kg
+                      </span>
+                    </div>
+                  )}
+                  {selectedAppointment.patientHeight && (
+                    <div className="flex items-center text-sm">
+                      <Ruler className="h-4 w-4 mr-2 text-gray-400" />
+                      <span className="font-medium text-gray-600">Height:</span>
+                      <span className="ml-2 text-gray-900">
+                        {selectedAppointment.patientHeight} cm
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Patient Allergies */}
+            {selectedAppointment.patientAllergy && (
+              <div className="bg-red-50 rounded-lg p-4">
+                <h4 className="font-medium text-gray-900 mb-3 flex items-center">
+                  <AlertTriangle className="h-5 w-5 mr-2 text-red-600" />
+                  Allergies
+                </h4>
+                <div className="flex items-start space-x-2">
+                  <AlertTriangle className="h-4 w-4 mt-0.5 text-red-500 flex-shrink-0" />
+                  <p className="text-sm text-red-700">
+                    {selectedAppointment.patientAllergy}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Appointment Information */}
+            <div className="bg-blue-50 rounded-lg p-4">
+              <h4 className="font-medium text-gray-900 mb-3 flex items-center">
+                <Calendar className="h-5 w-5 mr-2 text-blue-600" />
+                Appointment Information
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <div className="flex items-center text-sm">
+                    <Calendar className="h-4 w-4 mr-2 text-gray-400" />
+                    <span className="font-medium text-gray-600">Date:</span>
+                    <span className="ml-2 text-gray-900">
+                      {formatDate(selectedAppointment.date)}
+                    </span>
+                  </div>
+                  <div className="flex items-center text-sm">
+                    <Clock className="h-4 w-4 mr-2 text-gray-400" />
+                    <span className="font-medium text-gray-600">Time:</span>
+                    <span className="ml-2 text-gray-900">
+                      {formatTime(selectedAppointment.date)}
+                    </span>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center text-sm">
+                    <span className="font-medium text-gray-600">Status:</span>
+                    <span
+                      className={`ml-2 px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                        selectedAppointment.status
+                      )}`}
+                    >
+                      {selectedAppointment.status}
+                    </span>
+                  </div>
+                  {selectedAppointment.appointmentType && (
+                    <div className="flex items-center text-sm">
+                      <span className="font-medium text-gray-600">Type:</span>
+                      <span className="ml-2 text-gray-900">
+                        {selectedAppointment.appointmentType}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Modal Footer */}
+          <div className="flex items-center justify-end space-x-3 p-6 border-t bg-gray-50">
+            <button
+              onClick={() => setShowModal(false)}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+            >
+              Close
+            </button>
+            <button
+              onClick={() => {
+                handleConfirmAppointment(selectedAppointment.appointmentId);
+                setShowModal(false);
+              }}
+              className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700"
+            >
+              Confirm Appointment
+            </button>
+            <button
+              onClick={() => {
+                handleCancelAppointment(selectedAppointment.appointmentId);
+                setShowModal(false);
+              }}
+              className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
+            >
+              Cancel Appointment
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   if (loading) {
@@ -249,7 +462,7 @@ const DoctorAppointment = () => {
                         {appointment.patientImageUrl ? (
                           <img
                             className="h-10 w-10 rounded-full mr-3"
-                            src={`http://localhost:5000${appointment.doctorImageUrl}`}
+                            src={`http://localhost:5000${appointment.patientImageUrl}`}
                             alt={appointment.patientName}
                           />
                         ) : (
@@ -332,6 +545,9 @@ const DoctorAppointment = () => {
         Showing {filteredAppointments.length} of {appointments.length}{" "}
         appointments
       </div>
+
+      {/* Appointment Detail Modal */}
+      <AppointmentDetailModal />
     </div>
   );
 };

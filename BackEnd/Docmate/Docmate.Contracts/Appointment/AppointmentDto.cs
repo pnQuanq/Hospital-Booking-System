@@ -13,6 +13,10 @@
         public int PatientId { get; set; }
         public string PatientImageUrl { get; set; }
         public string PatientGender { get; set; }
+        public DateTime? PatientDateOfBirth { get; set; }
+        public float? PatientWeight { get; set; }
+        public float? PatientHeight { get; set; }
+        public string? PatientAllergy { get; set; }
 
     }
 }
