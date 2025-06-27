@@ -129,7 +129,7 @@ namespace Docmate.Core.Services.Features
         }
         public async Task<DoctorDto?> GetDoctorDetailsAsync(int userId)
         {
-            var doctor = await _doctorRepository.GetByIdWithUserAndSpecialtyAsync(userId);
+            var doctor = await _doctorRepository.GetByUserIdAsync(userId);
             if (doctor == null) return null;
 
             return new DoctorDto

@@ -50,17 +50,16 @@ const DoctorAppointment = () => {
       setFilteredAppointments(filtered);
     }
   }, [searchTerm, appointments]);
+  const token = localStorage.getItem("AToken");
 
+  if (!token) {
+    throw new Error("No authentication token found. Please log in again.");
+  }
   const fetchAppointments = async () => {
     try {
       setLoading(true);
 
       // Get the JWT token from localStorage
-      const token = localStorage.getItem("AToken");
-
-      if (!token) {
-        throw new Error("No authentication token found. Please log in again.");
-      }
 
       const response = await fetch(
         `http://localhost:5000/api/doctor/get-all-appointments`,
@@ -95,6 +94,51 @@ const DoctorAppointment = () => {
       console.error("Error fetching appointments:", err);
     } finally {
       setLoading(false);
+    }
+  };
+  // Update appointment status
+  const updateAppointmentStatus = async (appointmentId, newStatus) => {
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/admin/update-appointment-status`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            appointmentId: appointmentId,
+            newStatus: newStatus,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      toast.success(
+        result.message || "Appointment status updated successfully"
+      );
+
+      // Refresh the appointments list
+      fetchAllAppointments();
+    } catch (error) {
+      console.error("Error updating appointment status:", error);
+      toast.error("Failed to update appointment status");
+    }
+  };
+
+  // Handle status change
+  const handleStatusChange = (appointmentId, newStatus) => {
+    if (
+      window.confirm(
+        `Are you sure you want to change the status to ${newStatus}?`
+      )
+    ) {
+      updateAppointmentStatus(appointmentId, newStatus);
     }
   };
 
@@ -514,18 +558,26 @@ const DoctorAppointment = () => {
                           <Eye className="h-4 w-4" />
                         </button>
                         <button
-                          onClick={() =>
-                            handleConfirmAppointment(appointment.appointmentId)
-                          }
+                          onClick={() => {
+                            handleConfirmAppointment(appointment.appointmentId);
+                            handleStatusChange(
+                              appointment.appointmentId,
+                              "Scheduled"
+                            );
+                          }}
                           className="text-green-600 hover:text-green-900 p-1 rounded hover:bg-green-50"
                           title="Confirm"
                         >
                           <CheckCircle className="h-4 w-4" />
                         </button>
                         <button
-                          onClick={() =>
-                            handleCancelAppointment(appointment.appointmentId)
-                          }
+                          onClick={() => {
+                            handleConfirmAppointment(appointment.appointmentId);
+                            handleStatusChange(
+                              appointment.appointmentId,
+                              "Cancelled"
+                            );
+                          }}
                           className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50"
                           title="Cancel"
                         >

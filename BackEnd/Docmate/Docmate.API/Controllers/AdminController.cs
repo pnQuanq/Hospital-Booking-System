@@ -2,8 +2,6 @@
 using Docmate.Core.Contracts.Doctor;
 using Docmate.Core.Contracts.Specialty;
 using Docmate.Core.Services.Abstractions.Features;
-using Docmate.Core.Services.Features;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Docmate.API.Controllers

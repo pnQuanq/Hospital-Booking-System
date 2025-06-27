@@ -29,6 +29,7 @@ namespace Docmate.Infrastructure.Persistence.Repositories
         {
             return await _context.Doctors
                 .Include(p => p.User)
+                .Include(p => p.Specialty)
                 .FirstOrDefaultAsync(p => p.UserId == userId);
         }
     }
