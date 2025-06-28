@@ -4,7 +4,6 @@ using Docmate.Core.Domain.Entities;
 using Docmate.Core.Domain.Repositories;
 using Docmate.Core.Services.Abstractions.Features;
 using Microsoft.AspNetCore.Identity;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Docmate.Core.Services.Features
 {

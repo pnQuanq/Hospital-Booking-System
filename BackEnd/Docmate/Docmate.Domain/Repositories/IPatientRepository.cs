@@ -5,5 +5,6 @@ namespace Docmate.Core.Domain.Repositories
     public interface IPatientRepository : IGenericRepository<Patient>
     {
         Task<Patient> GetByUserIdAsync(int userId);
+        Task<List<Patient>> GetPatientsByDoctorIdAsync(int doctorId);
     }
 }

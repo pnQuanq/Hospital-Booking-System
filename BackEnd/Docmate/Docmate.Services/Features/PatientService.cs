@@ -7,10 +7,13 @@ namespace Docmate.Core.Services.Features
     public class PatientService : IPatientService
     {
         private readonly IPatientRepository _patientRepository;
+        private readonly IDoctorRepository _doctorRepository;
 
-        public PatientService(IPatientRepository patientRepository)
+        public PatientService(IPatientRepository patientRepository,
+                              IDoctorRepository doctorRepository)
         {
             _patientRepository = patientRepository;
+            _doctorRepository = doctorRepository;
         }
         public async Task<bool> UpdatePatientProfileAsync(int userId, UpdatePatientDto dto)
         {
@@ -45,5 +48,23 @@ namespace Docmate.Core.Services.Features
                 Email = patient.User.Email
             };
         }
+        public async Task<List<PatientDto>> GetPatientsByDoctorIdAsync(int doctorUserId)
+        {
+            var doctor = await _doctorRepository.GetByUserIdAsync(doctorUserId);
+            if (doctor == null)
+                throw new InvalidOperationException("Doctor not found.");
+
+            var patients = await _patientRepository.GetPatientsByDoctorIdAsync(doctor.DoctorId);
+
+            return patients.Select(p => new PatientDto
+            {
+                FullName = p.User.FullName,
+                Email = p.User.Email,
+                Gender = p.Gender,
+                DateOfBirth = p.DateOfBirth,
+                LastVisit = _patientRepository.CalculateLastVisit(p)
+            }).ToList();
+        }
+
     }
 }

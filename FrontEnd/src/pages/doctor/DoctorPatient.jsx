@@ -1,7 +1,47 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Search, Eye } from "lucide-react";
 
-const DoctorPatient = ({ recentPatients }) => {
+const DoctorPatient = () => {
+  const [patients, setPatients] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const fetchPatients = async () => {
+    try {
+      const token = localStorage.getItem("AToken");
+      const response = await fetch("http://localhost:5000/api/doctor/get-patients", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) throw new Error("Failed to fetch patients");
+      const data = await response.json();
+
+      // Map API response to match UI expectations
+      const formatted = data.map((p) => ({
+        id: p.patientId,
+        name: p.fullName,
+        condition: p.gender || "N/A",
+        lastVisit: p.dateOfBirth ? new Date(p.dateOfBirth).toLocaleDateString() : "Unknown",
+        status: "Active", // You can change this based on logic
+      }));
+
+      setPatients(formatted);
+    } catch (err) {
+      console.error("Error fetching patients:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchPatients();
+  }, []);
+
+  const filteredPatients = patients.filter((p) =>
+    p.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -13,6 +53,8 @@ const DoctorPatient = ({ recentPatients }) => {
               type="text"
               placeholder="Search patients..."
               className="pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
           <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
@@ -22,7 +64,7 @@ const DoctorPatient = ({ recentPatients }) => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {recentPatients.map((patient) => (
+        {filteredPatients.map((patient) => (
           <div
             key={patient.id}
             className="bg-white rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow"

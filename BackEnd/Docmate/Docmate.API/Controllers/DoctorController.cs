@@ -57,5 +57,18 @@ namespace Docmate.API.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+        [HttpGet("get-patients")]
+        public async Task<IActionResult> GetMyPatients()
+        {
+            var userIdClaim = User.FindFirst("UserId")?.Value;
+            if (!int.TryParse(userIdClaim, out var userId))
+            {
+                return Unauthorized("Invalid or missing user ID claim.");
+            }
+
+            var result = await _patientService.GetPatientsByDoctorIdAsync(userId);
+            return Ok(result);
+        }
+
     }
 }
