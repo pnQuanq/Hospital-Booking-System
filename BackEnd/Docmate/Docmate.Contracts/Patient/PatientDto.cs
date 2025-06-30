@@ -10,5 +10,6 @@
         public float? Height { get; set; }
         public string? Allergy { get; set; }
         public string Email { get; set; }
+        public DateTime? LastVisit { get; set; }
     }
 }

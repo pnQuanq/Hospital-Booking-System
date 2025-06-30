@@ -5,7 +5,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 const Navbar = () => {
   const navigate = useNavigate();
 
-  const [showMenu, setShowMenu] = useState(false);
+  const [showMenu, setShowMenu] = useState(true);
   const [token, setToken] = useState(localStorage.getItem("AToken"));
 
   // Listen for changes to localStorage (like after login/logout)
