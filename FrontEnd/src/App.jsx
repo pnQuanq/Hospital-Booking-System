@@ -19,12 +19,10 @@ import SpecialtyManagement from "./pages/SpecialtyManagement.jsx";
 import HospitalChatbot from "./components/HospitalChatbot.jsx";
 
 import DoctorLayout from "./layouts/DoctorLayout.jsx";
-import DoctorDashboard from "./pages/doctor/DoctorDashboard.jsx";
+import DoctorDashboard from "./pages/doctor/DoctorDashBoard.jsx";
 import DoctorAppointments from "./pages/doctor/DoctorAppointment.jsx";
-import DoctorPatients from "./pages/doctor/DoctorPatient.jsx";
 import DoctorProfile from "./pages/doctor/DoctorProfile.jsx";
 import DoctorSchedule from "./pages/doctor/DoctorSchedule.jsx";
-import DoctorNotifications from "./pages/doctor/DoctorNotifications.jsx";
 
 const App = () => {
   const location = useLocation();
@@ -42,10 +40,8 @@ const App = () => {
   const isDoctorRoute = [
     "/doctor-dashboard",
     "/doctor-appointments",
-    "/doctor-patients",
     "/doctor-profile",
     "/doctor-schedule",
-    "/doctor-notifications",
   ].some((route) => location.pathname.startsWith(route));
 
   // For admin routes, only render Routes within AdminLayout
@@ -73,10 +69,8 @@ const App = () => {
         <Routes>
           <Route path="/doctor-dashboard" element={<DoctorDashboard />} />
           <Route path="/doctor-appointments" element={<DoctorAppointments />} />
-          <Route path="/doctor-patients" element={<DoctorPatients />} />
           <Route path="/doctor-profile" element={<DoctorProfile />} />
           <Route path="/doctor-schedule" element={<DoctorSchedule />} />
-          <Route path="/doctor-notifications" element={<DoctorNotifications />} />
         </Routes>
       </DoctorLayout>
     );

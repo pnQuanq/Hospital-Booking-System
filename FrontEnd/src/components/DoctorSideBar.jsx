@@ -4,7 +4,6 @@ import {
   Clock,
   Users,
   FileText,
-  Bell,
   Settings,
   LogOut,
 } from "lucide-react";
@@ -13,9 +12,7 @@ const DoctorSidebar = ({ activeTab, setActiveTab, doctorData }) => {
   const sidebarItems = [
     { id: "overview", label: "Overview", icon: Users },
     { id: "appointments", label: "Appointments", icon: Calendar },
-    { id: "patients", label: "Patients", icon: FileText },
     { id: "schedule", label: "Schedule", icon: Clock },
-    { id: "notifications", label: "Notifications", icon: Bell },
     { id: "profile", label: "Profile", icon: Settings },
   ];
 
@@ -62,13 +59,6 @@ const DoctorSidebar = ({ activeTab, setActiveTab, doctorData }) => {
           })}
         </ul>
       </nav>
-
-      <div className="absolute bottom-4 left-4 right-4">
-        <button className="w-full flex items-center space-x-3 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">
-          <LogOut className="h-5 w-5" />
-          <span>Logout</span>
-        </button>
-      </div>
     </div>
   );
 };

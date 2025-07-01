@@ -6,6 +6,8 @@
         public int DoctorId { get; set; }
         public string DoctorName { get; set; }
         public DateTime Date { get; set; }
+        public string DateString { get; set; } // for "yyyy-MM-dd"
+        public string TimeString { get; set; } // for "HH:mm"
         public string Status { get; set; }
         public string DoctorImageUrl { get; set; }
         public string Specialty {  get; set; }
@@ -17,6 +19,5 @@
         public float? PatientWeight { get; set; }
         public float? PatientHeight { get; set; }
         public string? PatientAllergy { get; set; }
-
     }
 }

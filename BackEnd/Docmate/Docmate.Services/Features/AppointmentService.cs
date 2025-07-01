@@ -177,6 +177,8 @@ namespace Docmate.Core.Services.Features
                 PatientHeight = a.Patient.Height,
                 PatientWeight = a.Patient.Weight,
                 Date = a.Date,
+                DateString = a.Date.ToString("yyyy-MM-dd"),
+                TimeString = a.Date.ToString("HH:mm"),
                 Status = a.Status.ToString()
             }).ToList();
         }

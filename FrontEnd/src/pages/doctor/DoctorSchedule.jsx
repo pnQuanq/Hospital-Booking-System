@@ -28,14 +28,6 @@ const DoctorSchedule = () => {
   const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const timeSlots = generateTimeSlots();
 
-  // API Configuration
-  const API_BASE_URL = "http://localhost:5000/api";
-  const token = localStorage.getItem("AToken");
-
-  if (!token) {
-    throw new Error("No authentication token found. Please log in again.");
-  }
-
   useEffect(() => {
     // Initialize with current week
     const today = new Date();
@@ -43,70 +35,135 @@ const DoctorSchedule = () => {
     startOfWeek.setDate(today.getDate() - today.getDay());
     setCurrentWeekStart(startOfWeek);
     setSelectedDate(today);
-    
+
     // Fetch appointments from API
     fetchAppointments();
   }, []);
 
-  // Fetch appointments from the API
   const fetchAppointments = async () => {
     try {
       setLoading(true);
       setError(null);
-      
-      const response = await fetch(`${API_BASE_URL}/doctor/get-all-appointments`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+
+      const token = localStorage.getItem("AToken");
+      if (!token) {
+        throw new Error("No authentication token found. Please log in again.");
+      }
+
+      const response = await fetch(
+        `http://localhost:5000/api/doctor/get-all-appointments`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const appointmentData = await response.json();
-      
+
       // Transform the API data to match the UI format
-      const transformedAppointments = appointmentData.map(appointment => ({
-        id: appointment.AppointmentId,
-        patientName: appointment.PatientName,
-        patientPhone: appointment.PatientPhone || "N/A", // Add phone if available in your API
-        patientEmail: appointment.PatientEmail || "N/A", // Add email if available in your API
-        patientGender: appointment.PatientGender,
-        patientAllergy: appointment.PatientAllergy,
-        patientDateOfBirth: appointment.PatientDateOfBirth,
-        patientHeight: appointment.PatientHeight,
-        patientWeight: appointment.PatientWeight,
-        patientImageUrl: appointment.PatientImageUrl,
-        date: formatDateForUI(appointment.Date),
-        time: formatTimeForUI(appointment.Date),
-        status: appointment.Status,
-        type: "Consultation", // Default type, adjust based on your data
-        doctorName: appointment.DoctorName,
-        specialty: appointment.Specialty,
-      }));
+      const transformedAppointments = appointmentData.map((appointment) => {
+        return {
+          id: appointment.appointmentId,
+          patientName: appointment.patientName,
+          patientPhone: appointment.patientPhone || "N/A",
+          patientEmail: appointment.patientEmail || "N/A",
+          patientGender: appointment.patientGender,
+          patientDateOfBirth: appointment.patientDateOfBirth,
+          patientHeight: appointment.patientHeight,
+          patientWeight: appointment.patientWeight,
+          patientImageUrl: appointment.patientImageUrl,
+          // Extract date in YYYY-MM-DD format
+          date: appointment.dateString,
+          // Extract time in HH:MM format
+          time: appointment.timeString,
+          status: appointment.Status,
+          type: "Consultation",
+          doctorName: appointment.doctorName,
+          specialty: appointment.specialty,
+          // Store original datetime for reference
+          originalDateTime: appointment.date,
+        };
+      });
+
+      console.log("Transformed appointments:", transformedAppointments);
 
       setAppointments(transformedAppointments);
     } catch (err) {
-      console.error('Error fetching appointments:', err);
+      console.error("Error fetching appointments:", err);
       setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  // Helper function to format date from API response
+  // Fixed date formatting function
   const formatDateForUI = (dateString) => {
-    const date = new Date(dateString);
-    return date.toISOString().split("T")[0];
+    try {
+      // Handle ISO date string properly
+      let date;
+      if (dateString.includes("T")) {
+        // ISO format: "2025-07-03T07:30:00"
+        date = new Date(dateString);
+      } else {
+        // Other formats
+        date = new Date(dateString);
+      }
+
+      if (isNaN(date.getTime())) {
+        console.error("Invalid date:", dateString);
+        return "Invalid date";
+      }
+
+      // Return date in YYYY-MM-DD format
+      const year = date.getFullYear();
+      const month = (date.getMonth() + 1).toString().padStart(2, "0");
+      const day = date.getDate().toString().padStart(2, "0");
+      const formatted = `${year}-${month}-${day}`;
+
+      console.log("Formatted date:", dateString, "->", formatted);
+      return formatted;
+    } catch (error) {
+      console.error("Error formatting date:", dateString, error);
+      return "Invalid date";
+    }
   };
 
-  // Helper function to format time from API response
+  // Fixed time formatting function
   const formatTimeForUI = (dateString) => {
-    const date = new Date(dateString);
-    return date.toTimeString().slice(0, 5); // HH:MM format
+    try {
+      // Handle ISO date string properly
+      let date;
+      if (dateString.includes("T")) {
+        // ISO format: "2025-07-03T07:30:00"
+        date = new Date(dateString);
+      } else {
+        // Other formats
+        date = new Date(dateString);
+      }
+
+      if (isNaN(date.getTime())) {
+        console.error("Invalid date for time:", dateString);
+        return "Invalid time";
+      }
+
+      // Return time in HH:MM format (24-hour)
+      const hours = date.getHours().toString().padStart(2, "0");
+      const minutes = date.getMinutes().toString().padStart(2, "0");
+      const formatted = `${hours}:${minutes}`;
+
+      console.log("Formatted time:", dateString, "->", formatted);
+      return formatted;
+    } catch (error) {
+      console.error("Error formatting time:", dateString, error);
+      return "Invalid time";
+    }
   };
 
   function generateTimeSlots() {
@@ -156,24 +213,53 @@ const DoctorSchedule = () => {
     return `${displayHour}:${minutes} ${ampm}`;
   }
 
+  // Fixed appointment matching function
   function getAppointmentForSlot(date, time) {
-    const dateString = date.toISOString().split("T")[0];
-    return appointments.find(
-      (apt) => apt.date === dateString && apt.time === time
-    );
+    const localDateString = date.toLocaleDateString("en-CA"); // YYYY-MM-DD format
+
+    const match = appointments.find((apt) => {
+      const dateMatch = apt.date === localDateString;
+      const timeMatch = apt.time === time;
+
+      console.log("Checking appointment:", {
+        appointmentDate: apt.date,
+        appointmentTime: apt.time,
+        slotDate: localDateString,
+        slotTime: time,
+        dateMatch,
+        timeMatch,
+        patientName: apt.patientName,
+      });
+
+      return dateMatch && timeMatch;
+    });
+
+    if (match) {
+      console.log(
+        "✅ Found matching appointment:",
+        match.patientName,
+        "at",
+        localDateString,
+        time
+      );
+    } else {
+      console.log("❌ No appointment found for", localDateString, time);
+    }
+
+    return match;
   }
 
   function getStatusColor(status) {
-    switch (status.toLowerCase()) {
-      case "confirmed":
-      case "scheduled":
+    switch (status) {
+      case "Confirmed":
+      case "Scheduled":
         return "bg-green-100 text-green-800 border-green-200";
-      case "pending":
+      case "Pending":
         return "bg-yellow-100 text-yellow-800 border-yellow-200";
-      case "cancelled":
-      case "canceled":
+      case "Cancelled":
+      case "Canceled":
         return "bg-red-100 text-red-800 border-red-200";
-      case "completed":
+      case "Completed":
         return "bg-blue-100 text-blue-800 border-blue-200";
       default:
         return "bg-gray-100 text-gray-800 border-gray-200";
@@ -252,7 +338,7 @@ const DoctorSchedule = () => {
             disabled={loading}
             className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
           >
-            <Loader2 className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            <Loader2 className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
             Refresh
           </button>
         </div>
@@ -262,11 +348,27 @@ const DoctorSchedule = () => {
           <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
             <AlertCircle className="h-5 w-5 text-red-500" />
             <div>
-              <p className="text-red-800 font-medium">Error loading appointments</p>
+              <p className="text-red-800 font-medium">
+                Error loading appointments
+              </p>
               <p className="text-red-600 text-sm">{error}</p>
             </div>
           </div>
         )}
+
+        {/* Debug Info */}
+        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <p className="text-blue-800 text-sm font-medium">Debug Info:</p>
+          <p className="text-blue-700 text-xs">
+            Total appointments loaded: {appointments.length}
+          </p>
+          {appointments.length > 0 && (
+            <p className="text-blue-700 text-xs">
+              Sample: {appointments[0].patientName} on {appointments[0].date} at{" "}
+              {appointments[0].time}
+            </p>
+          )}
+        </div>
 
         {/* Week Navigation */}
         <div className="flex items-center justify-center gap-4 mb-6">
@@ -374,10 +476,11 @@ const DoctorSchedule = () => {
                         } ${isWeekend ? "bg-gray-100" : ""}`}
                       >
                         {appointment ? (
+                          // Show appointment regardless of whether it's in the past or not
                           <div
                             className={`p-2 rounded-lg border text-xs ${getStatusColor(
                               appointment.status
-                            )}`}
+                            )} ${isPast ? "opacity-75" : ""}`}
                           >
                             <div className="font-semibold mb-1">
                               {appointment.patientName}
@@ -388,12 +491,9 @@ const DoctorSchedule = () => {
                             </div>
                             {appointment.patientGender && (
                               <div className="flex items-center gap-1 mb-1">
-                                <span className="text-xs">Gender: {appointment.patientGender}</span>
-                              </div>
-                            )}
-                            {appointment.patientAllergy && (
-                              <div className="flex items-center gap-1 mb-1">
-                                <span className="text-xs text-red-600">Allergy: {appointment.patientAllergy}</span>
+                                <span className="text-xs">
+                                  Gender: {appointment.patientGender}
+                                </span>
                               </div>
                             )}
                             <div className="mt-1 text-center">
@@ -401,6 +501,14 @@ const DoctorSchedule = () => {
                                 {appointment.status}
                               </span>
                             </div>
+                            {/* Add a "Past" indicator for completed past appointments */}
+                            {isPast && (
+                              <div className="mt-1 text-center">
+                                <span className="px-1 py-0.5 rounded text-xs font-medium bg-gray-200 text-gray-600">
+                                  Past
+                                </span>
+                              </div>
+                            )}
                           </div>
                         ) : isWorking && !isWeekend && !isPast ? (
                           <div className="h-full flex items-center justify-center">
@@ -496,10 +604,10 @@ const DoctorSchedule = () => {
               <p className="text-sm text-gray-600">Confirmed</p>
               <p className="text-2xl font-bold text-green-600">
                 {
-                  appointments.filter((apt) => 
-                    apt.status.toLowerCase() === "confirmed" || 
-                    apt.status.toLowerCase() === "scheduled"
-                  ).length
+                  appointments.filter((apt) => {
+                    const status = apt.status;
+                    return status === "Confirmed" || status === "Scheduled";
+                  }).length
                 }
               </p>
             </div>
@@ -512,7 +620,7 @@ const DoctorSchedule = () => {
             <div>
               <p className="text-sm text-gray-600">Pending</p>
               <p className="text-2xl font-bold text-yellow-600">
-                {appointments.filter((apt) => apt.status.toLowerCase() === "pending").length}
+                {appointments.filter((apt) => apt.status === "Pending").length}
               </p>
             </div>
             <Clock className="h-8 w-8 text-yellow-500" />

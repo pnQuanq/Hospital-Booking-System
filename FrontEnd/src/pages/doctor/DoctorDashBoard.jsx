@@ -2,12 +2,7 @@ import React, { useState } from "react";
 import Sidebar from "../../components/DoctorSideBar.jsx";
 import OverviewPage from "./DoctorOverview.jsx";
 import AppointmentsPage from "./DoctorAppointment.jsx";
-import PatientsPage from "./DoctorPatient.jsx";
-import {
-  SchedulePage,
-  NotificationsPage,
-  ProfilePage,
-} from "./PlaceHolderPages.jsx";
+import { SchedulePage, ProfilePage } from "./PlaceHolderPages.jsx";
 
 const DoctorDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -87,12 +82,8 @@ const DoctorDashboard = () => {
         );
       case "appointments":
         return <AppointmentsPage appointments={appointments} />;
-      case "patients":
-        return <PatientsPage recentPatients={recentPatients} />;
       case "schedule":
         return <SchedulePage />;
-      case "notifications":
-        return <NotificationsPage />;
       case "profile":
         return <ProfilePage />;
       default:
