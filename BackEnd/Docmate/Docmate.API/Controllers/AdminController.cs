@@ -2,12 +2,14 @@
 using Docmate.Core.Contracts.Doctor;
 using Docmate.Core.Contracts.Specialty;
 using Docmate.Core.Services.Abstractions.Features;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Docmate.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class AdminController : Controller
     {
         private readonly IDoctorService _doctorService;
@@ -45,6 +47,12 @@ namespace Docmate.API.Controllers
                                                    [FromForm] int experience, [FromForm] int specialtyId,
                                                    [FromForm] string description)
         {
+            var roleClaim = User.FindFirst("Role")?.Value;
+
+            if (roleClaim != "Admin")
+            {
+                return Forbid("Only Admin can access");
+            }
             // Save image file
             string imagePath = null;
             if (doctorImage != null && doctorImage.Length > 0)
@@ -83,6 +91,12 @@ namespace Docmate.API.Controllers
         [HttpPut("update-doctor")]
         public async Task<IActionResult> UpdateDoctor(UpdateDoctorDto dto)
         {
+            var roleClaim = User.FindFirst("Role")?.Value;
+
+            if (roleClaim == "Patient")
+            {
+                return Forbid("User cannot access");
+            }
             try
             {
                 var doctor = await _doctorService.UpdateDoctorAsync(dto);
@@ -97,6 +111,12 @@ namespace Docmate.API.Controllers
         [HttpPost("add-specialty")]
         public async Task<IActionResult> AddSpecialty([FromForm] AddSpecialtyDto dto)
         {
+            var roleClaim = User.FindFirst("Role")?.Value;
+
+            if (roleClaim != "Admin")
+            {
+                return Forbid("Only Admin can access");
+            }
             await _specialtyService.AddSpecialtyAsync(dto);
             return Ok(new { message = "Specialty added successfully" });
         }
@@ -104,6 +124,12 @@ namespace Docmate.API.Controllers
         [HttpPut("update-specialty")]
         public async Task<IActionResult> UpdateSpecialty([FromForm] UpdateSpecialtyDto dto)
         {
+            var roleClaim = User.FindFirst("Role")?.Value;
+
+            if (roleClaim != "Admin")
+            {
+                return Forbid("Only Admin can access");
+            }
             await _specialtyService.UpdateSpecialtyAsync(dto);
             return Ok(new { message = "Specialty updated successfully" });
         }
@@ -111,6 +137,12 @@ namespace Docmate.API.Controllers
         [HttpDelete("delete-specialty/{id}")]
         public async Task<IActionResult> DeleteSpecialty(int id)
         {
+            var roleClaim = User.FindFirst("Role")?.Value;
+
+            if (roleClaim != "Admin")
+            {
+                return Forbid("Only Admin can access");
+            }
             await _specialtyService.DeleteSpecialtyAsync(id);
             return Ok(new { message = "Specialty deleted successfully" });
         }
@@ -118,12 +150,24 @@ namespace Docmate.API.Controllers
         [HttpGet("get-all-specialty")]
         public async Task<IActionResult> GetAllSpecialty()
         {
+            var roleClaim = User.FindFirst("Role")?.Value;
+
+            if (roleClaim != "Admin")
+            {
+                return Forbid("Only Admin can access");
+            }
             var specialties = await _specialtyService.GetAllSpecialtyAsync();
             return Ok(specialties);
         }
         [HttpGet("all-appointments")]
         public async Task<ActionResult<List<AdminAppointmentDto>>> GetAllAppointments()
         {
+            var roleClaim = User.FindFirst("Role")?.Value;
+
+            if (roleClaim != "Admin")
+            {
+                return Forbid("Only Admin can access");
+            }
             try
             {
                 var appointments = await _appointmentService.GetAllAppointmentsForAdminAsync();
@@ -137,6 +181,12 @@ namespace Docmate.API.Controllers
         [HttpPut("update-appointment-status")]
         public async Task<ActionResult> UpdateAppointmentStatus([FromBody] UpdateAppointmentDto dto)
         {
+            var roleClaim = User.FindFirst("Role")?.Value;
+
+            if (roleClaim == "Patient")
+            {
+                return Forbid("Only Admin can access");
+            }
             try
             {
                 var result = await _appointmentService.UpdateStatusAsync(dto);

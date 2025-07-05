@@ -53,7 +53,18 @@ const DoctorLayout = ({ children }) => {
   };
 
   const handleLogout = () => {
-    // Add logout logic here
+    // Clear authentication data from localStorage
+    localStorage.removeItem("AToken");
+    localStorage.removeItem("isAdmin");
+    localStorage.removeItem("isDoctor");
+    
+    // Dispatch storage event to notify other components about logout
+    window.dispatchEvent(new Event("storage"));
+    
+    // Show logout confirmation
+    alert("Logged out successfully");
+    
+    // Navigate to login page
     navigate("/login");
   };
 
@@ -64,7 +75,7 @@ const DoctorLayout = ({ children }) => {
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
-      <div className="w-64 bg-white shadow-sm border-r">
+      <div className="w-64 bg-white shadow-sm border-r fixed h-full overflow-y-auto">
         <div className="p-6 border-b">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
@@ -86,7 +97,8 @@ const DoctorLayout = ({ children }) => {
           </div>
         </div>
 
-        <nav className="p-4">
+        {/* Navigation - Scrollable area */}
+        <nav className="p-4 pb-20">
           <ul className="space-y-2">
             {sidebarItems.map((item) => {
               const Icon = item.icon;
@@ -111,10 +123,11 @@ const DoctorLayout = ({ children }) => {
           </ul>
         </nav>
 
-        <div className="absolute bottom-4 left-4 right-4">
+        {/* Logout Button - Fixed at bottom of sidebar */}
+        <div className="absolute bottom-0 left-0 right-0 p-4 bg-white border-t">
           <button
             onClick={handleLogout}
-            className="w-full flex items-center space-x-3 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
+            className="w-full flex items-center space-x-3 px-3 py-2 text-gray-700 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors"
           >
             <LogOut className="h-5 w-5" />
             <span>Logout</span>
@@ -123,7 +136,7 @@ const DoctorLayout = ({ children }) => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 p-8">
+      <div className="flex-1 p-8 ml-64">
         <div className="max-w-7xl mx-auto">{children}</div>
       </div>
     </div>

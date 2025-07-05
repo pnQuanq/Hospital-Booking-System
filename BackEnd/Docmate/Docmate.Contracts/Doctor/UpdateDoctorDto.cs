@@ -14,5 +14,6 @@ namespace Docmate.Core.Contracts.Doctor
         public int? SpecialtyId { get; set; }
         public int? ExperienceYears { get; set; }
         public bool? IsAvailable { get; set; }
+        public string? Password { get; set; }
     }
 }

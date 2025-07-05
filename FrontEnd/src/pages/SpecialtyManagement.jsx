@@ -5,6 +5,7 @@ const SpecialtyManagement = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingSpecialty, setEditingSpecialty] = useState(null);
   const [description, setDescription] = useState("");
+  const [fee, setFee] = useState("");
   const [loading, setLoading] = useState(false);
 
   // Fetch all specialties
@@ -43,6 +44,7 @@ const SpecialtyManagement = () => {
     try {
       const formData = new FormData();
       formData.append("Description", description.trim());
+      formData.append("Fee", fee.trim());
 
       let url = "http://localhost:5000/api/admin/add-specialty";
       let method = "POST";
@@ -81,6 +83,7 @@ const SpecialtyManagement = () => {
   const handleEdit = (specialty) => {
     setEditingSpecialty(specialty);
     setDescription(specialty.description);
+    setFee(specialty.fee);
     setShowForm(true);
   };
 
@@ -125,6 +128,7 @@ const SpecialtyManagement = () => {
 
   const resetForm = () => {
     setDescription("");
+    setFee();
     setEditingSpecialty(null);
     setShowForm(false);
   };
@@ -161,6 +165,17 @@ const SpecialtyManagement = () => {
                 className="border rounded px-3 py-2"
                 type="text"
                 placeholder="Enter specialty description"
+                required
+              />
+            </div>
+            <div className="flex flex-col gap-1 mb-4">
+              <p className="text-gray-600">Booking Fee</p>
+              <input
+                onChange={(e) => setFee(e.target.value)}
+                value={fee}
+                className="border rounded px-3 py-2"
+                type="number"
+                placeholder="Enter booking fee"
                 required
               />
             </div>

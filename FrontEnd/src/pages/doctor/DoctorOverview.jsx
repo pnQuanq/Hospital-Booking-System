@@ -1,7 +1,7 @@
 import React from "react";
 import { Calendar, Clock, Users, Star } from "lucide-react";
 
-const DoctorOverview = ({ doctorData, appointments, recentPatients }) => {
+const DoctorOverview = ({ doctorData, appointments }) => {
   const getStatusColor = (status) => {
     switch (status) {
       case "confirmed":
@@ -34,9 +34,9 @@ const DoctorOverview = ({ doctorData, appointments, recentPatients }) => {
         <div className="bg-white p-6 rounded-lg shadow-sm border">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Total Patients</p>
+              <p className="text-sm text-gray-600">Total Appointment</p>
               <p className="text-3xl font-bold text-green-600">
-                {doctorData.totalPatients}
+                {doctorData.totalAppointments}
               </p>
             </div>
             <Users className="h-8 w-8 text-green-600" />
@@ -46,9 +46,9 @@ const DoctorOverview = ({ doctorData, appointments, recentPatients }) => {
         <div className="bg-white p-6 rounded-lg shadow-sm border">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Pending Appointments</p>
+              <p className="text-sm text-gray-600">Completed Appointments</p>
               <p className="text-3xl font-bold text-yellow-600">
-                {doctorData.pendingAppointments}
+                {doctorData.completedAppointments}
               </p>
             </div>
             <Clock className="h-8 w-8 text-yellow-600" />
@@ -95,36 +95,6 @@ const DoctorOverview = ({ doctorData, appointments, recentPatients }) => {
                     )}`}
                   >
                     {appointment.status}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Recent Patients */}
-      <div className="bg-white rounded-lg shadow-sm border">
-        <div className="p-6 border-b">
-          <h3 className="text-lg font-semibold">Recent Patients</h3>
-        </div>
-        <div className="p-6">
-          <div className="space-y-4">
-            {recentPatients.map((patient) => (
-              <div
-                key={patient.id}
-                className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
-              >
-                <div>
-                  <p className="font-medium">{patient.name}</p>
-                  <p className="text-sm text-gray-600">{patient.condition}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm text-gray-600">
-                    Last visit: {patient.lastVisit}
-                  </p>
-                  <span className="text-sm font-medium text-blue-600">
-                    {patient.status}
                   </span>
                 </div>
               </div>

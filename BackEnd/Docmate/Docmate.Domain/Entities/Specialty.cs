@@ -6,6 +6,7 @@ namespace Docmate.Core.Domain.Entities
     {
         public int SpecialtyId { get; set; }
         public string Description { get; set; }
+        public double Fee { get; set; }
 
         public ICollection<Doctor> Doctors { get; set; }
     }

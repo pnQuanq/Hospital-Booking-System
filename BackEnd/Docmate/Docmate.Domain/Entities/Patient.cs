@@ -15,6 +15,7 @@ namespace Docmate.Core.Domain.Entities
         public float? Weight { get; set; }
         public float? Height { get; set; }
         public string? Allergy { get; set; }
+        public ICollection<Payment> Payments { get; set; } = new List<Payment>();
 
         public ICollection<Appointment> Appointments { get; set; }
         public ICollection<SymptomLog> SymptomLogs { get; set; }

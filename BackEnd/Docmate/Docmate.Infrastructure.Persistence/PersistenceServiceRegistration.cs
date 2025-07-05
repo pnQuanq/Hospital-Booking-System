@@ -21,8 +21,11 @@ namespace Docmate.Infrastructure.Persistence
             services.AddScoped<ISpecialtyRepository, SpecialtyRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IPatientRepository, PatientRepository>();
+            services.AddScoped<IPaymentRepository, PaymentRepository>();
+            services.AddScoped<IReviewRepository, ReviewRepository>();
             services.AddScoped<IAppointmentRepository, AppointmentRepository>();
             services.AddScoped<ITimeSlotRepository, TimeSlotRepository>();
+            services.AddScoped<IDoctorRecommendationRepository, DoctorRecommendationRepository>();
             services.AddScoped<IChatSessionRepository, ChatSessionRepository>();
 
             // 1. Database

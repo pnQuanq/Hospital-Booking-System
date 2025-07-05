@@ -14,8 +14,10 @@ namespace Docmate.Core.Domain.Entities
         public Doctor Doctor { get; set; }
 
         public DateTime Date { get; set; }
+        public bool IsReviewed { get; set; }
         public AppointmentStatus Status { get; set; } // Scheduled, Completed, Cancelled
 
         public Review Review { get; set; }
+        public Payment? Payment { get; set; }
     }
 }

@@ -32,7 +32,7 @@ namespace Docmate.API.Controllers
             {
                 return Unauthorized("Invalid or missing user ID claim.");
             }
-            var result = await _doctorService.GetDoctorDetailsAsync(userId);
+            var result = await _doctorService.GetDoctorProfileAsync(userId);
 
             if (result == null) return NotFound("Doctor not found.");
             return Ok(result);
@@ -49,6 +49,26 @@ namespace Docmate.API.Controllers
             try
             {
                 var result = await _appointmentService.GetAppointmentsByDoctorIdAsync(userId);
+                if (result == null) return NotFound("Doctor not found.");
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+        [HttpGet("get-booked-appointments")]
+        public async Task<IActionResult> GetBookedAppointments()
+        {
+            var userIdClaim = User.FindFirst("UserId")?.Value;
+            if (!int.TryParse(userIdClaim, out var userId))
+            {
+                return Unauthorized("Invalid or missing user ID claim.");
+            }
+
+            try
+            {
+                var result = await _appointmentService.GetBookedAppointmentAsync(userId);
                 if (result == null) return NotFound("Doctor not found.");
                 return Ok(result);
             }

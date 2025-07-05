@@ -2,9 +2,36 @@ import React, { useEffect, useState } from "react";
 
 const DoctorList = () => {
   const [doctors, setDoctors] = useState([]);
+  const [specialties, setSpecialties] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const doctorsPerPage = 6;
+  const [selectedDoctor, setSelectedDoctor] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    password: "",
+    specialtyId: "",
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const doctorsPerPage = 8;
+
+  const fetchSpecialties = async () => {
+    try {
+      const token = localStorage?.getItem("AToken") || "";
+      const response = await fetch(
+        "http://localhost:5000/api/admin/get-all-specialty",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const data = await response.json();
+      setSpecialties(data);
+    } catch (error) {
+      console.error("Error fetching specialties:", error);
+      alert("Failed to fetch specialties");
+    }
+  };
 
   useEffect(() => {
     const fetchDoctors = async () => {
@@ -26,6 +53,7 @@ const DoctorList = () => {
     };
 
     fetchDoctors();
+    fetchSpecialties(); // Add this line to fetch specialties on mount
   }, []);
 
   const changeAvailability = async (doctorId, currentAvailability) => {
@@ -76,6 +104,84 @@ const DoctorList = () => {
     }
   };
 
+  const handleDoctorClick = (doctor) => {
+    setSelectedDoctor(doctor);
+    setFormData({
+      password: "",
+      specialtyId: doctor.specialtyId || "",
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleSpecialtyChange = (e) => {
+    setFormData({
+      ...formData,
+      specialtyId: parseInt(e.target.value) || "",
+    });
+  };
+
+  const handleSubmit = async () => {
+    setIsLoading(true);
+
+    try {
+      const token = localStorage.getItem("AToken");
+      const updateData = {
+        doctorId: selectedDoctor.doctorId,
+        ...(formData.password && { password: formData.password }),
+        ...(formData.specialtyId && { specialtyId: formData.specialtyId }),
+      };
+
+      const response = await fetch(
+        "http://localhost:5000/api/admin/update-doctor",
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(updateData),
+        }
+      );
+
+      if (response.ok) {
+        // Update the doctor in the local state
+        setDoctors((prevDoctors) =>
+          prevDoctors.map((doc) =>
+            doc.doctorId === selectedDoctor.doctorId
+              ? {
+                  ...doc,
+                  specialtyId: formData.specialtyId || doc.specialtyId,
+                  // Update specialty description based on new specialty
+                  specialtyDescription: formData.specialtyId
+                    ? specialties.find((s) => s.id === formData.specialtyId)
+                        ?.description || doc.specialtyDescription
+                    : doc.specialtyDescription,
+                }
+              : doc
+          )
+        );
+
+        setIsModalOpen(false);
+        setSelectedDoctor(null);
+        setFormData({ password: "", specialtyId: "" });
+        alert("Doctor updated successfully!");
+      } else {
+        throw new Error("Failed to update doctor");
+      }
+    } catch (error) {
+      console.error("Error updating doctor:", error);
+      alert("Failed to update doctor. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedDoctor(null);
+    setFormData({ password: "", specialtyId: "" });
+  };
+
   const filteredDoctors = doctors.filter(
     (doc) =>
       doc.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -101,15 +207,16 @@ const DoctorList = () => {
         value={searchQuery}
         onChange={(e) => {
           setSearchQuery(e.target.value);
-          setCurrentPage(1); // Reset to first page on new search
+          setCurrentPage(1);
         }}
       />
 
       <div className="w-full flex flex-wrap gap-4 gap-y-6">
-        {currentDoctors.map((item, index) => (
+        {currentDoctors.map((item) => (
           <div
             className="border border-indigo-200 rounded-xl max-w-56 overflow-hidden cursor-pointer group"
-            key={index}
+            key={item.doctorId}
+            onClick={() => handleDoctorClick(item)}
           >
             <img
               className="bg-indigo-50 group-hover:bg-primary transition-all duration-500"
@@ -128,9 +235,10 @@ const DoctorList = () => {
                 <input
                   type="checkbox"
                   checked={!!item.isAvailable}
-                  onChange={() =>
-                    changeAvailability(item.doctorId, item.isAvailable)
-                  }
+                  onChange={(e) => {
+                    e.stopPropagation();
+                    changeAvailability(item.doctorId, item.isAvailable);
+                  }}
                 />
                 <p>Available</p>
               </div>
@@ -159,6 +267,88 @@ const DoctorList = () => {
           >
             Next
           </button>
+        </div>
+      )}
+
+      {/* Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold">Edit Doctor</h2>
+              <button
+                onClick={closeModal}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            </div>
+
+            {selectedDoctor && (
+              <div className="mb-4">
+                <p className="font-medium">{selectedDoctor.fullName}</p>
+                <p className="text-sm text-gray-600">
+                  ID: {selectedDoctor.doctorId}
+                </p>
+              </div>
+            )}
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  New Password (optional)
+                </label>
+                <input
+                  type="password"
+                  value={formData.password}
+                  onChange={(e) =>
+                    setFormData({ ...formData, password: e.target.value })
+                  }
+                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  placeholder="Enter new password"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Specialty
+                </label>
+                <select
+                  value={formData.specialtyId}
+                  onChange={handleSpecialtyChange}
+                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                  <option value="">Select specialty</option>
+                  {specialties.map((specialty) => (
+                    <option
+                      key={specialty.specialtyId}
+                      value={specialty.specialtyId}
+                    >
+                      {specialty.description}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={closeModal}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSubmit}
+                  disabled={isLoading}
+                  className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isLoading ? "Updating..." : "Update Doctor"}
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

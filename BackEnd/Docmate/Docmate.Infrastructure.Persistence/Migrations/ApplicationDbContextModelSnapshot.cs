@@ -117,6 +117,9 @@ namespace Docmate.Infrastructure.Persistence.Migrations
                     b.Property<int>("DoctorId")
                         .HasColumnType("int");
 
+                    b.Property<bool>("IsReviewed")
+                        .HasColumnType("bit");
+
                     b.Property<int>("PatientId")
                         .HasColumnType("int");
 
@@ -280,6 +283,47 @@ namespace Docmate.Infrastructure.Persistence.Migrations
                     b.ToTable("Patients");
                 });
 
+            modelBuilder.Entity("Docmate.Core.Domain.Entities.Payment", b =>
+                {
+                    b.Property<int>("PaymentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PaymentId"));
+
+                    b.Property<double>("Amount")
+                        .HasColumnType("float");
+
+                    b.Property<int>("AppointmentId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("DateCreated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DateModified")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("PatientId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PaymentMethod")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("PaymentId");
+
+                    b.HasIndex("AppointmentId")
+                        .IsUnique();
+
+                    b.HasIndex("PatientId");
+
+                    b.ToTable("Payments");
+                });
+
             modelBuilder.Entity("Docmate.Core.Domain.Entities.Review", b =>
                 {
                     b.Property<int>("ReviewId")
@@ -340,6 +384,9 @@ namespace Docmate.Infrastructure.Persistence.Migrations
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<double>("Fee")
+                        .HasColumnType("float");
 
                     b.HasKey("SpecialtyId");
 
@@ -598,6 +645,25 @@ namespace Docmate.Infrastructure.Persistence.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Docmate.Core.Domain.Entities.Payment", b =>
+                {
+                    b.HasOne("Docmate.Core.Domain.Entities.Appointment", "Appointment")
+                        .WithOne("Payment")
+                        .HasForeignKey("Docmate.Core.Domain.Entities.Payment", "AppointmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Docmate.Core.Domain.Entities.Patient", "Patient")
+                        .WithMany("Payments")
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Appointment");
+
+                    b.Navigation("Patient");
+                });
+
             modelBuilder.Entity("Docmate.Core.Domain.Entities.Review", b =>
                 {
                     b.HasOne("Docmate.Core.Domain.Entities.Appointment", "Appointment")
@@ -709,6 +775,8 @@ namespace Docmate.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("Docmate.Core.Domain.Entities.Appointment", b =>
                 {
+                    b.Navigation("Payment");
+
                     b.Navigation("Review")
                         .IsRequired();
                 });
@@ -728,6 +796,8 @@ namespace Docmate.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Docmate.Core.Domain.Entities.Patient", b =>
                 {
                     b.Navigation("Appointments");
+
+                    b.Navigation("Payments");
 
                     b.Navigation("SymptomLogs");
                 });

@@ -164,7 +164,7 @@ namespace Docmate.API.Controllers
         {
             try
             {
-                var slots = await _appointmentService.GetDoctorReservedSlotsAsync(doctorId);
+                var slots = await _appointmentService.GetDoctorConfirmedSlotsAsync(doctorId);
                 return Ok(slots);
             }
             catch (Exception ex)

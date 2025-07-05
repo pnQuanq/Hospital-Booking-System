@@ -439,7 +439,7 @@ const Appointment = () => {
 
           <p className="text-gray-500 font-medium mt-4">
             Appointment fee:{" "}
-            <span className="text-gray-600">{currencySymbol}150</span>
+            <span className="text-gray-600">{currencySymbol}{docInfo.fee}</span>
           </p>
         </div>
       </div>
@@ -583,8 +583,6 @@ const Appointment = () => {
           </p>
         </div>
       )}
-
-      <RelatedDoctors docId={docId} speciality={docInfo.specialtyDescription} />
     </div>
   );
 };

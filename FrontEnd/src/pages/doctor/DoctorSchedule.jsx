@@ -51,7 +51,7 @@ const DoctorSchedule = () => {
       }
 
       const response = await fetch(
-        `http://localhost:5000/api/doctor/get-all-appointments`,
+        `http://localhost:5000/api/doctor/get-booked-appointments`,
         {
           method: "GET",
           headers: {
@@ -83,7 +83,7 @@ const DoctorSchedule = () => {
           date: appointment.dateString,
           // Extract time in HH:MM format
           time: appointment.timeString,
-          status: appointment.Status,
+          status: appointment.status,
           type: "Consultation",
           doctorName: appointment.doctorName,
           specialty: appointment.specialty,
@@ -251,14 +251,8 @@ const DoctorSchedule = () => {
 
   function getStatusColor(status) {
     switch (status) {
-      case "Confirmed":
       case "Scheduled":
         return "bg-green-100 text-green-800 border-green-200";
-      case "Pending":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200";
-      case "Cancelled":
-      case "Canceled":
-        return "bg-red-100 text-red-800 border-red-200";
       case "Completed":
         return "bg-blue-100 text-blue-800 border-blue-200";
       default:
@@ -341,33 +335,6 @@ const DoctorSchedule = () => {
             <Loader2 className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
             Refresh
           </button>
-        </div>
-
-        {/* Error Message */}
-        {error && (
-          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
-            <AlertCircle className="h-5 w-5 text-red-500" />
-            <div>
-              <p className="text-red-800 font-medium">
-                Error loading appointments
-              </p>
-              <p className="text-red-600 text-sm">{error}</p>
-            </div>
-          </div>
-        )}
-
-        {/* Debug Info */}
-        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-          <p className="text-blue-800 text-sm font-medium">Debug Info:</p>
-          <p className="text-blue-700 text-xs">
-            Total appointments loaded: {appointments.length}
-          </p>
-          {appointments.length > 0 && (
-            <p className="text-blue-700 text-xs">
-              Sample: {appointments[0].patientName} on {appointments[0].date} at{" "}
-              {appointments[0].time}
-            </p>
-          )}
         </div>
 
         {/* Week Navigation */}
@@ -485,10 +452,7 @@ const DoctorSchedule = () => {
                             <div className="font-semibold mb-1">
                               {appointment.patientName}
                             </div>
-                            <div className="flex items-center gap-1 mb-1">
-                              <User className="h-3 w-3" />
-                              <span>{appointment.type}</span>
-                            </div>
+
                             {appointment.patientGender && (
                               <div className="flex items-center gap-1 mb-1">
                                 <span className="text-xs">
@@ -547,15 +511,7 @@ const DoctorSchedule = () => {
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-xs">
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 bg-green-100 border border-green-200 rounded"></div>
-            <span>Confirmed</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-yellow-100 border border-yellow-200 rounded"></div>
-            <span>Pending</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-red-100 border border-red-200 rounded"></div>
-            <span>Cancelled</span>
+            <span>Scheduled</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 bg-blue-100 border border-blue-200 rounded"></div>
@@ -601,29 +557,17 @@ const DoctorSchedule = () => {
         <div className="bg-white p-4 rounded-lg shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Confirmed</p>
+              <p className="text-sm text-gray-600">Completed</p>
               <p className="text-2xl font-bold text-green-600">
                 {
                   appointments.filter((apt) => {
                     const status = apt.status;
-                    return status === "Confirmed" || status === "Scheduled";
+                    return status === "Completed";
                   }).length
                 }
               </p>
             </div>
             <User className="h-8 w-8 text-green-500" />
-          </div>
-        </div>
-
-        <div className="bg-white p-4 rounded-lg shadow">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Pending</p>
-              <p className="text-2xl font-bold text-yellow-600">
-                {appointments.filter((apt) => apt.status === "Pending").length}
-              </p>
-            </div>
-            <Clock className="h-8 w-8 text-yellow-500" />
           </div>
         </div>
       </div>

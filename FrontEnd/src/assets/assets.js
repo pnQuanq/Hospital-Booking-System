@@ -42,6 +42,7 @@ import add_icon from "./add_icon.png";
 import people_icon from "./people_icon.png";
 import upload_area from "./upload_area.png";
 import default_profile_pic from "./default-profile-pic.png";
+import docmate_logo from "./docmate_logo.jpg";
 
 export const assets = {
   appointment_img,
@@ -67,6 +68,7 @@ export const assets = {
   people_icon,
   upload_area,
   default_profile_pic,
+  docmate_logo
 };
 
 export const specialityData = [

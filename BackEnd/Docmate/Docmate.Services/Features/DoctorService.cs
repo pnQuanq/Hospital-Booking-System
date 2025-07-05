@@ -13,15 +13,18 @@ namespace Docmate.Core.Services.Features
         private readonly IUserRepository _userRepository;
         private readonly IMapper _mapper;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ISpecialtyRepository _specialtyRepository;
         public DoctorService(IDoctorRepository doctorRepository,
                              IUserRepository userRepository,
                              IMapper mapper,
-                             UserManager<ApplicationUser> userManager)
+                             UserManager<ApplicationUser> userManager,
+                             ISpecialtyRepository specialtyRepository)
         {
             _doctorRepository = doctorRepository;
             _userRepository = userRepository;
             _mapper = mapper;
             _userManager = userManager;
+            _specialtyRepository = specialtyRepository;
         }
         public async Task AddDoctorAsync(AddDoctorDto dto)
         {
@@ -96,13 +99,28 @@ namespace Docmate.Core.Services.Features
             // Update user-related fields
             if (!string.IsNullOrWhiteSpace(dto.FullName))
                 doctor.User.FullName = dto.FullName;
+            if (!string.IsNullOrWhiteSpace(dto.Password))
+            {
+                var token = await _userManager.GeneratePasswordResetTokenAsync(doctor.User);
+                var result = await _userManager.ResetPasswordAsync(doctor.User, token, dto.Password);
 
+                if (!result.Succeeded)
+                {
+                    var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                    throw new InvalidOperationException($"Failed to update password: {errors}");
+                }
+            }
             // Update doctor entity fields
             if (!string.IsNullOrWhiteSpace(dto.Description))
                 doctor.Description = dto.Description;
 
             if (dto.SpecialtyId.HasValue)
+            {
                 doctor.SpecialtyId = dto.SpecialtyId.Value;
+                var specialty = await _specialtyRepository.GetByIdAsync(dto.SpecialtyId.Value);
+                doctor.Specialty = specialty;
+            }
+                
 
             if (dto.ExperienceYears.HasValue)
                 doctor.ExperienceYears = dto.ExperienceYears.Value;
@@ -126,9 +144,31 @@ namespace Docmate.Core.Services.Features
 
             return _mapper.Map<List<DoctorDto>>(topDoctors);
         }
-        public async Task<DoctorDto?> GetDoctorDetailsAsync(int userId)
+        public async Task<DoctorDto?> GetDoctorDetailsAsync(int docId)
         {
-            var doctor = await _doctorRepository.GetByUserIdAsync(userId);
+            var doctor = await _doctorRepository.GetByIdWithUserAndSpecialtyAsync(docId);
+            if (doctor == null) return null;
+
+            return new DoctorDto
+            {
+                DoctorId = doctor.DoctorId,
+                FullName = doctor.User.FullName,
+                Email = doctor.User.Email,
+                ImageUrl = doctor.User.ImageUrl,
+
+                SpecialtyId = doctor.SpecialtyId,
+                SpecialtyDescription = doctor.Specialty?.Description,
+
+                ExperienceYears = doctor.ExperienceYears,
+                Description = doctor.Description,
+                Rating = doctor.Rating,
+                IsAvailable = doctor.IsAvailable,
+                Fee = doctor.Specialty.Fee,
+            };
+        }
+        public async Task<DoctorDto?> GetDoctorProfileAsync(int docId)
+        {
+            var doctor = await _doctorRepository.GetByUserIdAsync(docId);
             if (doctor == null) return null;
 
             return new DoctorDto
@@ -147,7 +187,6 @@ namespace Docmate.Core.Services.Features
                 IsAvailable = doctor.IsAvailable,
             };
         }
-
 
     }
 }

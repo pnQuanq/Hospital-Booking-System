@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { AppContext } from "../context/AppContext";
 import { toast } from "react-toastify";
+import { assets } from "../assets/assets";
 
 const AllAppointments = () => {
   const token = localStorage.getItem("AToken");
@@ -180,12 +181,18 @@ const AllAppointments = () => {
               <div className="flex items-center gap-2">
                 <img
                   className="w-8 h-8 rounded-full object-cover"
-                  src={`http://localhost:5000${item.patientImageUrl}`}
+                  src={
+                    item.patientImageUrl
+                      ? `http://localhost:5000${item.patientImageUrl}`
+                      : assets.default_profile_pic
+                  }
                   alt={item.patientFullName}
                   onError={(e) => {
-                    e.target.src = "/default-avatar.png";
+                    e.target.onerror = null; // Ngăn loop fallback
+                    e.target.src = assets.default_profile_pic;
                   }}
                 />
+
                 <div>
                   <p className="font-medium text-gray-700">
                     {item.patientFullName}

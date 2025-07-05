@@ -19,6 +19,7 @@ namespace Docmate.Infrastructure.Persistence.DataContext
         public DbSet<SymptomLog> SymptomLogs { get; set; }
         public DbSet<ChatSession> ChatSessions { get; set; }
         public DbSet<ChatMessage> ChatMessages { get; set; }
+        public DbSet<Payment> Payments { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder builder)
@@ -115,6 +116,19 @@ namespace Docmate.Infrastructure.Persistence.DataContext
                 .WithOne(m => m.ChatSession)
                 .HasForeignKey(m => m.ChatSessionId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<Appointment>()
+                .HasOne(a => a.Payment)
+                .WithOne(p => p.Appointment)
+                .HasForeignKey<Payment>(p => p.AppointmentId)
+                .OnDelete(DeleteBehavior.Cascade); // or Restrict
+
+            // Patient <-> Payments (One-to-Many)
+            builder.Entity<Patient>()
+                .HasMany(p => p.Payments)
+                .WithOne(pay => pay.Patient)
+                .HasForeignKey(pay => pay.PatientId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
         public override int SaveChanges()
         {

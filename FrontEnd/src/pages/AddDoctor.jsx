@@ -11,12 +11,17 @@ const AddDoctor = () => {
   const [Specialty, setSpecialty] = useState("");
 
   const [specialties, setSpecialties] = useState([]);
-
+  const token = localStorage?.getItem("AToken") || "";
   useEffect(() => {
     const fetchSpecialties = async () => {
       try {
         const response = await fetch(
-          "http://localhost:5000/api/admin/get-all-specialty"
+          "http://localhost:5000/api/admin/get-all-specialty",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
         );
         const data = await response.json();
         setSpecialties(data);

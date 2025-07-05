@@ -14,6 +14,7 @@
         public string Description { get; set; }
         public double Rating { get; set; }
         public bool IsAvailable { get; set; }
+        public double Fee { get; set; }
     }
 
 }

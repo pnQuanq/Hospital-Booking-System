@@ -147,6 +147,7 @@ namespace Docmate.Core.Services.Features
                 DoctorImageUrl = a.Doctor.User.ImageUrl,
                 Specialty = a.Doctor.Specialty.Description,
                 Date = a.Date,
+                IsReviewed = a.IsReviewed,
                 Status = a.Status.ToString()
             }).ToList();
         }
@@ -167,6 +168,7 @@ namespace Docmate.Core.Services.Features
                 DoctorName = a.Doctor.User.FullName,
                 DoctorImageUrl = a.Doctor.User.ImageUrl,
                 Specialty = a.Doctor.Specialty.Description,
+                Rating = a.Doctor.Rating,
 
                 PatientId = a.PatientId,
                 PatientImageUrl = a.Patient.User.ImageUrl,
@@ -182,7 +184,39 @@ namespace Docmate.Core.Services.Features
                 Status = a.Status.ToString()
             }).ToList();
         }
+        public async Task<List<AppointmentDto>> GetBookedAppointmentAsync(int userId)
+        {
+            var doctor = await _doctorRepository.GetByUserIdAsync(userId);
+            if (doctor == null)
+            {
+                throw new ArgumentException($"No doctor found for User ID {userId}");
+            }
 
+            var appointments = await _appointmentRepository.GetAppointmentsByDoctorIdAsync(doctor.DoctorId);
+
+            return appointments
+                .Where(a => a.Status.ToString() == "Scheduled" || a.Status.ToString() == "Completed")
+                .Select(a => new AppointmentDto
+                {
+                    AppointmentId = a.AppointmentId,
+                    DoctorId = a.DoctorId,
+                    DoctorName = a.Doctor.User.FullName,
+                    DoctorImageUrl = a.Doctor.User.ImageUrl,
+                    Specialty = a.Doctor.Specialty.Description,
+                    PatientId = a.PatientId,
+                    PatientImageUrl = a.Patient.User.ImageUrl,
+                    PatientGender = a.Patient.Gender,
+                    PatientName = a.Patient.User.FullName,
+                    PatientAllergy = a.Patient.Allergy,
+                    PatientDateOfBirth = a.Patient.DateOfBirth,
+                    PatientHeight = a.Patient.Height,
+                    PatientWeight = a.Patient.Weight,
+                    Date = a.Date,
+                    DateString = a.Date.ToString("yyyy-MM-dd"),
+                    TimeString = a.Date.ToString("HH:mm"),
+                    Status = a.Status.ToString()
+                }).ToList();
+        }
         public async Task<bool> UpdateStatusAsync(UpdateAppointmentDto dto)
         {
             // Get the appointment with full details including Patient and Doctor
@@ -220,17 +254,22 @@ namespace Docmate.Core.Services.Features
             {
                 AppointmentStatus.Pending => TimeSlotStatus.Reserved,
                 AppointmentStatus.Scheduled => TimeSlotStatus.Confirmed,
-                AppointmentStatus.Completed => TimeSlotStatus.Free, // Free up the slot after completion
-                AppointmentStatus.Cancelled => TimeSlotStatus.Free, // Free up the slot when cancelled
-                _ => timeSlot.Status // Keep current status for unknown statuses
+                AppointmentStatus.Completed => TimeSlotStatus.Free,
+                AppointmentStatus.Cancelled => TimeSlotStatus.Free,
+                _ => timeSlot.Status
             };
 
-            // Only update if the status actually changes
             if (timeSlot.Status != newTimeSlotStatus)
             {
                 timeSlot.Status = newTimeSlotStatus;
                 await _timeSlotRepository.UpdateAsync(timeSlot);
             }
+        }
+        public async Task UpdateAppointmentReviewAsync(int appointmentId)
+        {
+            var a = await _appointmentRepository.GetByIdAsync(appointmentId);
+            a.IsReviewed = true;
+            await _appointmentRepository.UpdateAsync(a);
         }
         public async Task<List<AdminAppointmentDto>> GetAllAppointmentsForAdminAsync()
         {

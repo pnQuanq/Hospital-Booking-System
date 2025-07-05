@@ -2,7 +2,6 @@
 using Docmate.Core.Domain.Entities;
 using Docmate.Core.Domain.Repositories;
 using Docmate.Core.Services.Abstractions.Features;
-using Docmate.Infrastructure.Persistence.Repositories;
 
 namespace Docmate.Core.Services.Features
 {
@@ -18,7 +17,8 @@ namespace Docmate.Core.Services.Features
         {
             var specialty = new Specialty
             {
-                Description = dto.Description
+                Description = dto.Description,
+                Fee = dto.Fee,
             };
 
             await _specialtyRepository.AddAsync(specialty);
@@ -29,6 +29,7 @@ namespace Docmate.Core.Services.Features
             if (specialty == null) throw new Exception("Specialty not found");
 
             specialty.Description = dto.Description;
+            specialty.Fee = dto.Fee;
 
             await _specialtyRepository.UpdateAsync(specialty);
 

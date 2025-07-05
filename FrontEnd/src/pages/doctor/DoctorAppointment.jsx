@@ -370,25 +370,7 @@ const DoctorAppointment = () => {
               className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
             >
               Close
-            </button>
-            <button
-              onClick={() => {
-                handleConfirmAppointment(selectedAppointment.appointmentId);
-                setShowModal(false);
-              }}
-              className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700"
-            >
-              Confirm Appointment
-            </button>
-            <button
-              onClick={() => {
-                handleCancelAppointment(selectedAppointment.appointmentId);
-                setShowModal(false);
-              }}
-              className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
-            >
-              Cancel Appointment
-            </button>
+            </button>           
           </div>
         </div>
       </div>
@@ -562,11 +544,11 @@ const DoctorAppointment = () => {
                             handleConfirmAppointment(appointment.appointmentId);
                             handleStatusChange(
                               appointment.appointmentId,
-                              "Scheduled"
+                              "Completed"
                             );
                           }}
                           className="text-green-600 hover:text-green-900 p-1 rounded hover:bg-green-50"
-                          title="Confirm"
+                          title="Completed"
                         >
                           <CheckCircle className="h-4 w-4" />
                         </button>

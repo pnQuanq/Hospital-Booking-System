@@ -6,8 +6,10 @@
         public int DoctorId { get; set; }
         public string DoctorName { get; set; }
         public DateTime Date { get; set; }
+        public bool IsReviewed { get; set; }
         public string DateString { get; set; } // for "yyyy-MM-dd"
         public string TimeString { get; set; } // for "HH:mm"
+        public double Rating { get; set; }
         public string Status { get; set; }
         public string DoctorImageUrl { get; set; }
         public string Specialty {  get; set; }

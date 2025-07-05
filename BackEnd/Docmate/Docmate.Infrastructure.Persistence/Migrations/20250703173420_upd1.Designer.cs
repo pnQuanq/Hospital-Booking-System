@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Docmate.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250616114334_init")]
-    partial class init
+    [Migration("20250703173420_upd1")]
+    partial class upd1
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -120,6 +120,9 @@ namespace Docmate.Infrastructure.Persistence.Migrations
                     b.Property<int>("DoctorId")
                         .HasColumnType("int");
 
+                    b.Property<bool>("IsReviewed")
+                        .HasColumnType("bit");
+
                     b.Property<int>("PatientId")
                         .HasColumnType("int");
 
@@ -136,53 +139,19 @@ namespace Docmate.Infrastructure.Persistence.Migrations
                     b.ToTable("Appointments");
                 });
 
-            modelBuilder.Entity("Docmate.Core.Domain.Entities.ChatConversation", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime?>("DateCreated")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DateModified")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("EndedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime>("StartedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ChatConversations");
-                });
-
             modelBuilder.Entity("Docmate.Core.Domain.Entities.ChatMessage", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("ChatMessageId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ChatMessageId"));
 
-                    b.Property<double?>("Confidence")
-                        .HasColumnType("float");
-
-                    b.Property<string>("Content")
+                    b.Property<string>("BotResponse")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("ConversationId")
+                    b.Property<int>("ChatSessionId")
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("DateCreated")
@@ -190,18 +159,48 @@ namespace Docmate.Infrastructure.Persistence.Migrations
 
                     b.Property<DateTime?>("DateModified")
                         .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsFromUser")
-                        .HasColumnType("bit");
 
                     b.Property<DateTime>("Timestamp")
                         .HasColumnType("datetime2");
 
-                    b.HasKey("Id");
+                    b.Property<string>("UserMessage")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
-                    b.HasIndex("ConversationId");
+                    b.HasKey("ChatMessageId");
+
+                    b.HasIndex("ChatSessionId");
 
                     b.ToTable("ChatMessages");
+                });
+
+            modelBuilder.Entity("Docmate.Core.Domain.Entities.ChatSession", b =>
+                {
+                    b.Property<int>("ChatSessionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ChatSessionId"));
+
+                    b.Property<DateTime?>("DateCreated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DateModified")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("LastActiveAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("SessionId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ChatSessionId");
+
+                    b.ToTable("ChatSessions");
                 });
 
             modelBuilder.Entity("Docmate.Core.Domain.Entities.Doctor", b =>
@@ -287,6 +286,47 @@ namespace Docmate.Infrastructure.Persistence.Migrations
                     b.ToTable("Patients");
                 });
 
+            modelBuilder.Entity("Docmate.Core.Domain.Entities.Payment", b =>
+                {
+                    b.Property<int>("PaymentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PaymentId"));
+
+                    b.Property<double>("Amount")
+                        .HasColumnType("float");
+
+                    b.Property<int>("AppointmentId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("DateCreated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DateModified")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("PatientId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PaymentMethod")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("PaymentId");
+
+                    b.HasIndex("AppointmentId")
+                        .IsUnique();
+
+                    b.HasIndex("PatientId");
+
+                    b.ToTable("Payments");
+                });
+
             modelBuilder.Entity("Docmate.Core.Domain.Entities.Review", b =>
                 {
                     b.Property<int>("ReviewId")
@@ -347,6 +387,9 @@ namespace Docmate.Infrastructure.Persistence.Migrations
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<double>("Fee")
+                        .HasColumnType("float");
 
                     b.HasKey("SpecialtyId");
 
@@ -566,13 +609,13 @@ namespace Docmate.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("Docmate.Core.Domain.Entities.ChatMessage", b =>
                 {
-                    b.HasOne("Docmate.Core.Domain.Entities.ChatConversation", "Conversation")
+                    b.HasOne("Docmate.Core.Domain.Entities.ChatSession", "ChatSession")
                         .WithMany("Messages")
-                        .HasForeignKey("ConversationId")
+                        .HasForeignKey("ChatSessionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Conversation");
+                    b.Navigation("ChatSession");
                 });
 
             modelBuilder.Entity("Docmate.Core.Domain.Entities.Doctor", b =>
@@ -603,6 +646,25 @@ namespace Docmate.Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Docmate.Core.Domain.Entities.Payment", b =>
+                {
+                    b.HasOne("Docmate.Core.Domain.Entities.Appointment", "Appointment")
+                        .WithOne("Payment")
+                        .HasForeignKey("Docmate.Core.Domain.Entities.Payment", "AppointmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Docmate.Core.Domain.Entities.Patient", "Patient")
+                        .WithMany("Payments")
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Appointment");
+
+                    b.Navigation("Patient");
                 });
 
             modelBuilder.Entity("Docmate.Core.Domain.Entities.Review", b =>
@@ -716,11 +778,13 @@ namespace Docmate.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("Docmate.Core.Domain.Entities.Appointment", b =>
                 {
+                    b.Navigation("Payment");
+
                     b.Navigation("Review")
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Docmate.Core.Domain.Entities.ChatConversation", b =>
+            modelBuilder.Entity("Docmate.Core.Domain.Entities.ChatSession", b =>
                 {
                     b.Navigation("Messages");
                 });
@@ -735,6 +799,8 @@ namespace Docmate.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Docmate.Core.Domain.Entities.Patient", b =>
                 {
                     b.Navigation("Appointments");
+
+                    b.Navigation("Payments");
 
                     b.Navigation("SymptomLogs");
                 });
