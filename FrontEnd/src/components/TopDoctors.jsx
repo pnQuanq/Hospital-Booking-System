@@ -51,7 +51,7 @@ const TopDoctors = () => {
             key={index}
           >
             <img
-              className="bg-blue-50"
+              className="bg-blue-50 h-55"
               src={`http://localhost:5000${item.imageUrl}`}
               alt="doctor"
             />

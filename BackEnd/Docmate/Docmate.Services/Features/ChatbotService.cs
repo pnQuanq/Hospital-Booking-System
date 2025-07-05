@@ -1,8 +1,6 @@
 ﻿using Docmate.Core.Contracts.Chat;
-using Docmate.Core.Domain.Entities;
 using Docmate.Core.Domain.Repositories;
 using Docmate.Core.Services.Abstractions.Features;
-using Docmate.Infrastructure.Persistence.Repositories;
 using Microsoft.Extensions.Logging;
 
 namespace Docmate.Core.Services.Features

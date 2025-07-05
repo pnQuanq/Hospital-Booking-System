@@ -64,7 +64,7 @@ namespace Docmate.Core.Services.Features
                     strategy += " + Fallback";
                 }
 
-                // Sắp xếp lại theo điểm và lấy top 5
+                // Sắp xếp lại theo điểm và lấy top 6
                 recommendations = recommendations
                     .OrderByDescending(r => r.RecommendationScore)
                     .Take(6)

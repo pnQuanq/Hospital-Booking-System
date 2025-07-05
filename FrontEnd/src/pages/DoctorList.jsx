@@ -214,15 +214,27 @@ const DoctorList = () => {
       <div className="w-full flex flex-wrap gap-4 gap-y-6">
         {currentDoctors.map((item) => (
           <div
-            className="border border-indigo-200 rounded-xl max-w-56 overflow-hidden cursor-pointer group"
+            className="border border-indigo-200 rounded-xl w-56 overflow-hidden cursor-pointer group"
             key={item.doctorId}
             onClick={() => handleDoctorClick(item)}
           >
-            <img
-              className="bg-indigo-50 group-hover:bg-primary transition-all duration-500"
-              src={`http://localhost:5000${item.imageUrl}`}
-              alt="Doctor"
-            />
+            <div className="w-full h-48 bg-indigo-50 group-hover:bg-primary transition-all duration-500 overflow-hidden">
+              <img
+                className="w-full h-full object-cover object-center"
+                src={`http://localhost:5000${item.imageUrl}`}
+                alt={`Dr. ${item.fullName}`}
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  e.target.parentElement.innerHTML = `
+                    <div class="w-full h-full flex items-center justify-center bg-indigo-100 text-indigo-600">
+                      <svg class="w-16 h-16" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                      </svg>
+                    </div>
+                  `;
+                }}
+              />
+            </div>
             <div className="p-4">
               <p className="text-neutral-800 text-lg font-medium">
                 {item.fullName}
